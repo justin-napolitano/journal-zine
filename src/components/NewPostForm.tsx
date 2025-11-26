@@ -1,0 +1,109 @@
+// components/NewPostForm.tsx
+"use client";
+
+import { useState, useRef, FormEvent, ChangeEvent } from "react";
+import type { Post } from "@/lib/db";
+
+type Props = {
+  onCreated(post: Post): void;
+};
+
+export function NewPostForm({ onCreated }: Props) {
+  const [body, setBody] = useState("");
+  const [imageData, setImageData] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const maxChars = 500;
+  const remaining = maxChars - body.length;
+
+  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setImageData(null);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageData(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!body.trim() || body.length > maxChars) return;
+
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          body: body.trim(),
+          imageData,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to post", await res.text());
+        return;
+      }
+
+      const json = await res.json();
+      const post: Post = json.post;
+      onCreated(post);
+
+      setBody("");
+      setImageData(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const disabled = submitting || !body.trim() || body.length > maxChars;
+
+  return (
+    <section className="composer-card">
+      <form onSubmit={handleSubmit}>
+        <textarea
+          className="composer-textarea"
+          placeholder="New fragment..."
+          maxLength={maxChars + 20} // UI limits; server enforces 500 hard
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+        />
+        <div className="composer-footer">
+          <div className="composer-left">
+            <label className="composer-file-label">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="composer-file-input"
+                onChange={handleFileChange}
+              />
+              attach photo
+            </label>
+            {imageData && (
+              <span className="composer-meta">1 photo attached</span>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <span className="composer-meta">
+              {remaining} characters left
+            </span>
+            <button type="submit" className="btn-primary" disabled={disabled}>
+              publish
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+  );
+}
+
