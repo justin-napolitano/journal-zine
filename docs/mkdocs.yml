@@ -1,0 +1,7 @@
+nav:
+  - Architecture: journal-architecture-overview.md
+  - Auth & Sessions: journal-auth-and-sessions.md
+  - Mastodon: journal-mastodon-integration.md
+  - Frontend & Layout: journal-frontend-and-layout.md
+  - Dev & Ops: journal-dev-notes-and-maintenance.md
+
