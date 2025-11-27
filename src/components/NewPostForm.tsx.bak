@@ -1,7 +1,7 @@
-// components/NewPostForm.tsx
+// src/components/NewPostForm.tsx
 "use client";
 
-import { useState, useRef, FormEvent, ChangeEvent } from "react";
+import { useState, useRef, FormEvent, ChangeEvent, KeyboardEvent } from "react";
 import type { Post } from "@/lib/db";
 
 type Props = {
@@ -14,8 +14,16 @@ export function NewPostForm({ onCreated }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const maxChars = 500;
+  const maxChars = 120; // single-line caption-ish
+
   const remaining = maxChars - body.length;
+
+  function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter") {
+      // prevent multi-line input
+      e.preventDefault();
+    }
+  }
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -73,8 +81,9 @@ export function NewPostForm({ onCreated }: Props) {
         <textarea
           className="composer-textarea"
           placeholder="New fragment..."
-          maxLength={maxChars + 20} // UI limits; server enforces 500 hard
           value={body}
+          maxLength={maxChars}
+          onKeyDown={handleKeyDown}
           onChange={(e) => setBody(e.target.value)}
         />
         <div className="composer-footer">

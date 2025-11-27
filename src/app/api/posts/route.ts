@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { sql } from "@vercel/postgres";
 import { initDb, fetchPostsPage, type Post } from "@/lib/db";
 import { isRequestAuthed } from "@/lib/auth";
-import { postToMastodon } from "@/lib/mastodon";
+import { postToMastodon, uploadMediaToMastodon } from "@/lib/mastodon";
 
 export async function GET(request: Request) {
   await initDb();
@@ -24,34 +24,49 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   await initDb();
 
-  // 🔐 require admin session
   if (!(await isRequestAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const data = await request.json();
-  const body: string = (data.body ?? "").toString().trim();
+  const rawBody = (data.body ?? "").toString();
+  const body = rawBody.trim();
   const imageData: string | null = data.imageData ?? null;
+
+  const targets: string[] = Array.isArray(data.targets)
+    ? data.targets.filter((t) => typeof t === "string")
+    : [];
+
+  const wantsMastodon = targets.includes("mastodon");
 
   if (!body) {
     return NextResponse.json({ error: "Body is required" }, { status: 400 });
   }
 
-  const maxChars = 120; // single-line-ish
-  if (body.length > maxChars) {
-    return NextResponse.json({ error: "Body is too long" }, { status: 400 });
+  // per-site limits
+  const maxForJournal = 1000;
+  const maxForMastodon = 500;
+  const effectiveMax = wantsMastodon ? maxForMastodon : maxForJournal;
+
+  if (body.length > effectiveMax) {
+    return NextResponse.json(
+      {
+        error: `Body is too long (max ${effectiveMax} characters for selected targets)`,
+      },
+      { status: 400 },
+    );
   }
 
   if (imageData && typeof imageData !== "string") {
     return NextResponse.json(
       { error: "Invalid image data" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const kind: "text" | "photo" = imageData ? "photo" : "text";
 
-  // 1) create local post
+  // 1) create local post in your DB
   const { rows } = await sql<Post>`
     INSERT INTO posts (kind, body, image_data)
     VALUES (${kind}, ${body}, ${imageData})
@@ -59,12 +74,22 @@ export async function POST(request: Request) {
   `;
   const post = rows[0];
 
-  // 2) try to cross-post to Mastodon (text only for now)
-  try {
-    await postToMastodon(body);
-  } catch (err) {
-    console.error("Failed to post to Mastodon:", err);
-    // v1: just log; you could store error state in DB later
+  // 2) cross-post to Mastodon only if requested
+  if (wantsMastodon) {
+    try {
+      let mediaIds: string[] | undefined = undefined;
+
+      // If this post has an image, upload it to Mastodon first
+      if (imageData) {
+        const mediaId = await uploadMediaToMastodon(imageData);
+        mediaIds = [mediaId];
+      }
+
+      await postToMastodon(body, mediaIds);
+    } catch (err) {
+      console.error("Failed to cross-post to Mastodon:", err);
+      // v1: log only; later you could store status in DB
+    }
   }
 
   return NextResponse.json({ post });

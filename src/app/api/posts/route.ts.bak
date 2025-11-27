@@ -5,104 +5,38 @@ import { initDb, fetchPostsPage, type Post } from "@/lib/db";
 import { isRequestAuthed } from "@/lib/auth";
 import { postToMastodon } from "@/lib/mastodon";
 
-export async function GET(request: Request) {
-  await initDb();
-
-  const { searchParams } = new URL(request.url);
-  const cursorParam = searchParams.get("cursor");
-  const limitParam = searchParams.get("limit");
-
-  const cursor = cursorParam ? Number(cursorParam) : null;
-  const limit = limitParam ? Math.min(Number(limitParam), 50) : 12;
-
-  const posts = await fetchPostsPage(cursor, limit);
-  const nextCursor = posts.length ? posts[posts.length - 1].id : null;
-
-  return NextResponse.json({ posts, nextCursor });
-}
-
 export async function POST(request: Request) {
   await initDb();
 
-  // 🔐 require admin session
-  if (!isRequestAuthed()) {
+  if (!(await isRequestAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const data = await request.json();
-  const body: string = (data.body ?? "").toString().trim();
+  const rawBody = (data.body ?? "").toString();
+  const body = rawBody.trim();
   const imageData: string | null = data.imageData ?? null;
+
+  const targets: string[] = Array.isArray(data.targets)
+    ? data.targets.filter((t) => typeof t === "string")
+    : [];
+
+  const wantsMastodon = targets.includes("mastodon");
 
   if (!body) {
     return NextResponse.json({ error: "Body is required" }, { status: 400 });
   }
 
-  const maxChars = 120; // single-line-ish
-  if (body.length > maxChars) {
-    return NextResponse.json({ error: "Body is too long" }, { status: 400 });
-  }
+  // per-site limits
+  const maxForJournal = 1000;
+  const maxForMastodon = 500;
+  const effectiveMax = wantsMastodon ? maxForMastodon : maxForJournal;
 
-  if (imageData && typeof imageData !== "string") {
+  if (body.length > effectiveMax) {
     return NextResponse.json(
-      { error: "Invalid image data" },
+      { error: `Body is too long (max ${effectiveMax} characters for selected targets)` },
       { status: 400 }
     );
-  }
-
-  const kind: "text" | "photo" = imageData ? "photo" : "text";
-
-  // 1) create local post
-  const { rows } = await sql<Post>`
-    INSERT INTO posts (kind, body, image_data)
-    VALUES (${kind}, ${body}, ${imageData})
-    RETURNING *
-  `;
-  const post = rows[0];
-
-  // 2) try to cross-post to Mastodon (text only for now)
-  try {
-    await postToMastodon(body);
-  } catch (err) {
-    console.error("Failed to post to Mastodon:", err);
-    // v1: just log; you could store error state in DB later
-  }
-
-  return NextResponse.json({ post });
-}
-// app/api/posts/route.ts
-import { NextResponse } from "next/server";
-import { sql } from "@vercel/postgres";
-import { initDb, fetchPostsPage, type Post } from "@/lib/db";
-
-export async function GET(request: Request) {
-  await initDb();
-
-  const { searchParams } = new URL(request.url);
-  const cursorParam = searchParams.get("cursor");
-  const limitParam = searchParams.get("limit");
-
-  const cursor = cursorParam ? Number(cursorParam) : null;
-  const limit = limitParam ? Math.min(Number(limitParam), 50) : 12;
-
-  const posts = await fetchPostsPage(cursor, limit);
-  const nextCursor = posts.length ? posts[posts.length - 1].id : null;
-
-  return NextResponse.json({ posts, nextCursor });
-}
-
-export async function POST(request: Request) {
-  await initDb();
-
-  const data = await request.json();
-  const body: string = (data.body ?? "").toString().trim();
-  const imageData: string | null = data.imageData ?? null;
-
-  if (!body) {
-    return NextResponse.json({ error: "Body is required" }, { status: 400 });
-  }
-
-  if (body.length > 120) {
-    return NextResponse.json({ error: "Body is too long" }, { status: 400 });
   }
 
   if (imageData && typeof imageData !== "string") {
@@ -119,8 +53,18 @@ export async function POST(request: Request) {
     VALUES (${kind}, ${body}, ${imageData})
     RETURNING *
   `;
-
   const post = rows[0];
+
+  // cross-post only where requested
+  if (wantsMastodon) {
+    try {
+      await postToMastodon(body);
+    } catch (err) {
+      console.error("Failed to post to Mastodon:", err);
+      // v1: log and continue
+    }
+  }
+
   return NextResponse.json({ post });
 }
 

@@ -12,15 +12,19 @@ export function NewPostForm({ onCreated }: Props) {
   const [body, setBody] = useState("");
   const [imageData, setImageData] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [postToMastodon, setPostToMastodon] = useState(true); // default ON for now
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const maxChars = 120; // single-line caption-ish
+  // local vs Mastodon limits
+  const maxForJournal = 1000;
+  const maxForMastodon = 500;
 
-  const remaining = maxChars - body.length;
+  const effectiveMax = postToMastodon ? maxForMastodon : maxForJournal;
+  const remaining = effectiveMax - body.length;
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    // keep things microbloggy — still single-line
     if (e.key === "Enter") {
-      // prevent multi-line input
       e.preventDefault();
     }
   }
@@ -41,16 +45,21 @@ export function NewPostForm({ onCreated }: Props) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!body.trim() || body.length > maxChars) return;
+    const trimmed = body.trim();
+    if (!trimmed || trimmed.length > effectiveMax) return;
 
     setSubmitting(true);
     try {
+      const targets: string[] = [];
+      if (postToMastodon) targets.push("mastodon");
+
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          body: body.trim(),
+          body: trimmed,
           imageData,
+          targets,
         }),
       });
 
@@ -73,7 +82,8 @@ export function NewPostForm({ onCreated }: Props) {
     }
   }
 
-  const disabled = submitting || !body.trim() || body.length > maxChars;
+  const disabled =
+    submitting || !body.trim() || body.length > effectiveMax;
 
   return (
     <section className="composer-card">
@@ -82,7 +92,7 @@ export function NewPostForm({ onCreated }: Props) {
           className="composer-textarea"
           placeholder="New fragment..."
           value={body}
-          maxLength={maxChars}
+          maxLength={effectiveMax}
           onKeyDown={handleKeyDown}
           onChange={(e) => setBody(e.target.value)}
         />
@@ -102,13 +112,31 @@ export function NewPostForm({ onCreated }: Props) {
               <span className="composer-meta">1 photo attached</span>
             )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <span className="composer-meta">
-              {remaining} characters left
-            </span>
-            <button type="submit" className="btn-primary" disabled={disabled}>
-              publish
-            </button>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", alignItems: "flex-end" }}>
+            {/* Target selection */}
+            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+              <span className="composer-meta">post to:</span>
+              <label style={{ display: "flex", gap: "0.25rem", alignItems: "center", fontSize: "0.8rem" }}>
+                <input
+                  type="checkbox"
+                  checked={postToMastodon}
+                  onChange={(e) => setPostToMastodon(e.target.checked)}
+                />
+                mastodon
+              </label>
+              {/* later: add more platforms here */}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <span className="composer-meta">
+                {remaining} characters left
+                {postToMastodon && " (mastodon limit)"}
+              </span>
+              <button type="submit" className="btn-primary" disabled={disabled}>
+                publish
+              </button>
+            </div>
           </div>
         </div>
       </form>

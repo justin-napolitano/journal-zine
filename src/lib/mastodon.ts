@@ -1,15 +1,81 @@
 // src/lib/mastodon.ts
+
 const baseUrl = process.env.MASTODON_BASE_URL;
 const token = process.env.MASTODON_ACCESS_TOKEN;
 
-/**
- * Cross-post a status to Mastodon.
- * Returns the created status JSON or null if Mastodon is not configured.
- */
-export async function postToMastodon(status: string) {
+function ensureConfigured() {
   if (!baseUrl || !token) {
-    // Mastodon integration disabled if env vars are missing
+    throw new Error("Mastodon not configured (MASTODON_BASE_URL / MASTODON_ACCESS_TOKEN missing)");
+  }
+}
+
+/**
+ * Convert a data URL (data:image/...;base64,...) into a Blob we can upload.
+ */
+function dataUrlToBlob(dataUrl: string): Blob {
+  const match = dataUrl.match(/^data:(.*?);base64,(.*)$/);
+  if (!match) {
+    throw new Error("Invalid data URL for imageData");
+  }
+  const mime = match[1];
+  const base64 = match[2];
+
+  // Node 18+ has Buffer + Blob available in the runtime Next uses
+  const binary = Buffer.from(base64, "base64");
+  return new Blob([binary], { type: mime });
+}
+
+/**
+ * Upload an image to Mastodon and return its media_id.
+ * Expects `imageData` to be a data URL string.
+ */
+export async function uploadMediaToMastodon(imageData: string): Promise<string> {
+  if (!baseUrl || !token) {
+    // treat as "no integration" case
+    throw new Error("Mastodon media upload requested but Mastodon not configured");
+  }
+
+  const blob = dataUrlToBlob(imageData);
+
+  const formData = new FormData();
+  // filename doesn't really matter; use a generic one
+  formData.append("file", blob, "image.jpg");
+
+  const res = await fetch(`${baseUrl}/api/v2/media`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // DO NOT set Content-Type here; fetch will set the correct multipart boundary
+    },
+    body: formData,
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    console.error("Mastodon media error:", res.status, text);
+    throw new Error(`Mastodon media upload failed: ${res.status}`);
+  }
+
+  const json = JSON.parse(text) as { id: string };
+  return json.id;
+}
+
+/**
+ * Cross-post a status to Mastodon, optionally with attached media_ids.
+ */
+export async function postToMastodon(status: string, mediaIds?: string[]) {
+  if (!baseUrl || !token) {
+    // Integration disabled if env vars are missing
     return null;
+  }
+
+  const payload: any = {
+    status,
+    visibility: "public",
+  };
+
+  if (mediaIds && mediaIds.length > 0) {
+    payload.media_ids = mediaIds;
   }
 
   const res = await fetch(`${baseUrl}/api/v1/statuses`, {
@@ -18,18 +84,15 @@ export async function postToMastodon(status: string) {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      status,
-      visibility: "public",
-    }),
+    body: JSON.stringify(payload),
   });
 
+  const text = await res.text();
   if (!res.ok) {
-    const txt = await res.text();
-    console.error("Mastodon error:", txt);
+    console.error("Mastodon status error:", res.status, text);
     throw new Error(`Mastodon POST failed: ${res.status}`);
   }
 
-  return res.json();
+  return JSON.parse(text);
 }
 
