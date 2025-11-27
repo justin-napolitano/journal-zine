@@ -1,19 +1,17 @@
-// src/components/JournalApp.tsx
+// components/JournalApp.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import type { Post } from "@/lib/db";
 import { NewPostForm } from "./NewPostForm";
 import { PostCard } from "./PostCard";
-import Link from "next/link";
 
 type Props = {
   initialPosts: Post[];
   initialCursor: number | null;
-  isAuthed: boolean;
 };
 
-export function JournalApp({ initialPosts, initialCursor, isAuthed }: Props) {
+export function JournalApp({ initialPosts, initialCursor }: Props) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [cursor, setCursor] = useState<number | null>(initialCursor);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -40,6 +38,7 @@ export function JournalApp({ initialPosts, initialCursor, isAuthed }: Props) {
     );
 
     observer.observe(sentinel);
+
     return () => observer.disconnect();
 
     async function loadMore() {
@@ -70,33 +69,19 @@ export function JournalApp({ initialPosts, initialCursor, isAuthed }: Props) {
 
   function handleCreated(post: Post) {
     setPosts((prev) => [post, ...prev]);
+    // New post has highest id, so cursor stays valid
   }
 
   return (
     <div className="main-shell">
-      <header style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem" }}>
-        <div>
-          <div className="site-heading">journal</div>
-          <div className="site-subtitle">
-            an ongoing stream of photos & fragments
-          </div>
+      <header style={{ marginBottom: "1.5rem" }}>
+        <div className="site-heading">journal</div>
+        <div className="site-subtitle">
+          an ongoing stream of photos & fragments
         </div>
-        {!isAuthed && (
-          <Link
-            href="/login"
-            style={{
-              fontSize: "0.75rem",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--muted)",
-            }}
-          >
-            log in
-          </Link>
-        )}
       </header>
 
-      {isAuthed && <NewPostForm onCreated={handleCreated} />}
+      <NewPostForm onCreated={handleCreated} />
 
       <section className="feed">
         {posts.map((post) => (
