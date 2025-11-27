@@ -125,8 +125,7 @@ body {
   gap: 1.5rem;
 }
 
-/* Post card – same outer footprint for all posts */
-/* Post card – EXACT same outer size for all posts */
+/* Post card – fixed-ish height, centered */
 .post-card {
   max-width: 540px;
   margin: 0 auto;
@@ -138,14 +137,14 @@ body {
 
   display: flex;
   flex-direction: column;
-
-  /* fixed height so every card is identical */
-  height: 420px;
+  /* media height + caption + meta + padding → keeps cards visually equal */
+  min-height: 460px;
 }
 
-/* Shared media block – fixed height, same for text + photo */
+/* Shared media block – EXACT same size for photo + text posts */
 .post-media {
   width: 100%;
+  max-width: 100%;
   border-radius: 16px;
   overflow: hidden;
   background: #f3ebe1;
@@ -156,14 +155,14 @@ body {
   flex: 0 0 auto;
 }
 
-/* Slightly taller on bigger screens if you want */
+/* On wider screens, let it grow slightly */
 @media (min-width: 900px) {
   .post-media {
-    height: 340px;
+    height: 360px;
   }
 }
 
-/* Photo fills the frame */
+/* Photo fills the entire box */
 .post-image {
   display: block;
   width: 100%;
@@ -171,42 +170,46 @@ body {
   object-fit: cover;
 }
 
-/* Text-only post: text centered inside full frame */
-/* Text-only post: text centered vertically, left-aligned horizontally */
+/* Text-only: fill the same box and center the text */
 .post-media-text {
   display: flex;
-  align-items: center;       /* vertical center */
-  justify-content: flex-start; /* left-align within the box */
+  align-items: center;
+  justify-content: center;
   padding: 1.5rem;
   width: 100%;
   height: 100%;
-  text-align: left;
+  text-align: center;
 }
 
 /* Text inside the media box */
 .post-body {
   margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+/* Caption row – single line, fixed height for all cards */
+.post-caption {
+  margin-top: 0.75rem;
   font-size: 0.95rem;
   line-height: 1.4;
-
-  /* keep it to a single *visible* line */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-height: 1.4em; /* ensures same height even if empty */
 }
 
-/* Meta row – also prevent wrapping so it can't change card height */
+/* Meta row */
 .post-meta {
   margin-top: 0.5rem;
   font-size: 0.75rem;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* Hashtags */
-.post-body a.hashtag {
+/* Hashtags (both body + caption) */
+.post-body a.hashtag,
+.post-caption a.hashtag {
   color: var(--accent);
   text-decoration: none;
 }
@@ -216,6 +219,7 @@ body {
   height: 1px;
 }
 
+/* Small-screen tweaks */
 @media (max-width: 640px) {
   .main-shell {
     padding: 1.5rem 0.75rem 3rem;
@@ -228,8 +232,7 @@ body {
     box-shadow: none;
     border-left: none;
     border-right: none;
-
-    height: 400px; /* fixed on mobile too */
+    min-height: 430px;
   }
 
   .post-media {
