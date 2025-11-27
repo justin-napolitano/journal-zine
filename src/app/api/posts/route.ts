@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Body is required" }, { status: 400 });
   }
 
-  if (body.length > 500) {
+  if (body.length > 120) {
     return NextResponse.json({ error: "Body is too long" }, { status: 400 });
   }
 
