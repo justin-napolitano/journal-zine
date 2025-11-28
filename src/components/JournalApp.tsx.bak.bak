@@ -131,83 +131,29 @@ export function JournalApp({
     setSearch(next);
     void reloadWithQuery(next);
   }
-
   return (
     <div className="main-shell">
       <div className="page-head">
-        <div>
-          <div className="site-heading">journal</div>
-          <div className="site-subtitle">
-            an ongoing stream of photos &amp; fragments
-          </div>
+        {/* title + login */}
+      </div>
+
+      <div className="journal-column">
+        {/* search bar */}
+        <div className="journal-search">
+          {/* form */}
         </div>
 
-        {!isAuthed && (
-          <Link
-            href="/login"
-            style={{
-              fontSize: "0.75rem",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--muted)",
-            }}
-          >
-            log in
-          </Link>
-        )}
+        {isAuthed && <NewPostForm onCreated={handleCreated} />}
+
+        <section className="feed">
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} onTagClick={handleTagClick} />
+          ))}
+          <div ref={sentinelRef} className="sentinel" />
+        </section>
       </div>
 
-      {/* Single search bar */}
-      <div className="journal-search">
-        <form
-          className="journal-search-form"
-          onSubmit={handleSearchSubmit}
-        >
-          <div className="journal-search-row">
-            <input
-              className="journal-search-input"
-              type="text"
-              placeholder='search… (try "tag:journal", "type:photos", "source:mastodon")'
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <button
-              className="journal-search-button"
-              type="submit"
-              disabled={loadingInitial}
-            >
-              {loadingInitial ? "…" : "Search"}
-            </button>
-          </div>
-          <p className="journal-search-hint">
-            supports{" "}
-            <code>tag:foo</code>, <code>:tag foo</code>,{" "}
-            <code>type:notes</code>, <code>source:mastodon</code>
-          </p>
-        </form>
-      </div>
-
-      {isAuthed && <NewPostForm onCreated={handleCreated} />}
-
-      <section className="feed">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} onTagClick={handleTagClick} />
-        ))}
-
-        <div ref={sentinelRef} className="sentinel" />
-      </section>
-
-      {loadingMore && (
-        <p className="composer-meta" style={{ marginTop: "1rem" }}>
-          loading more…
-        </p>
-      )}
-
-      {reachedEnd && posts.length > 0 && !loadingInitial && (
-        <p className="composer-meta" style={{ marginTop: "1rem" }}>
-          you’ve reached the first page.
-        </p>
-      )}
+      {/* loading / end text */}
     </div>
   );
 }

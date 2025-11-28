@@ -2,7 +2,9 @@
 "use client";
 
 import { useState, useRef, FormEvent, ChangeEvent, KeyboardEvent } from "react";
-import type { Post } from "@/lib/db";
+//import type { Post } from "@/lib/db";
+// AFTER
+import type { Post } from "@/lib/posts";
 
 type Props = {
   onCreated(post: Post): void;

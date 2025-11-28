@@ -5,6 +5,7 @@ import type { Post } from "@/lib/db";
 
 type Props = {
   post: Post;
+  onTagClick?(tag: string): void;
 };
 
 function formatDate(iso: string | Date) {
@@ -18,19 +19,31 @@ function formatDate(iso: string | Date) {
   });
 }
 
-// Turn #tags into links
-function linkifyHashtags(text: string): React.ReactNode[] {
+// Turn #tags into clickable pills that call onTagClick
+function renderHashtags(
+  text: string,
+  onTagClick?: (tag: string) => void,
+): React.ReactNode[] {
   const parts = text.split(/(#[a-zA-Z0-9_]+)/g);
   return parts.map((part, idx) => {
     if (part.startsWith("#")) {
+      const tag = part.slice(1);
+      if (onTagClick) {
+        return (
+          <button
+            key={idx}
+            type="button"
+            className="hashtag"
+            onClick={() => onTagClick(tag)}
+          >
+            {part}
+          </button>
+        );
+      }
       return (
-        <a
-          key={idx}
-          href={`/?tag=${encodeURIComponent(part.slice(1))}`}
-          className="hashtag"
-        >
+        <span key={idx} className="hashtag">
           {part}
-        </a>
+        </span>
       );
     }
     return part;
@@ -39,7 +52,7 @@ function linkifyHashtags(text: string): React.ReactNode[] {
 
 function getSourceLabel(source: Post["source"]) {
   if (source === "local") return "journal";
-  return source; // "mastodon", "bluesky", etc. later
+  return source;
 }
 
 function getHost(url: string | null | undefined) {
@@ -52,10 +65,10 @@ function getHost(url: string | null | undefined) {
   }
 }
 
-export function PostCard({ post }: Props) {
+export function PostCard({ post, onTagClick }: Props) {
   const isPhoto = post.kind === "photo";
   const isLink = post.kind === "link";
-  const content = linkifyHashtags(post.body || "");
+  const content = renderHashtags(post.body || "", onTagClick);
 
   const primaryLink = post.link_url || post.external_url || null;
   const hostForLink = getHost(primaryLink);
