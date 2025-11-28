@@ -1,0 +1,150 @@
+// src/app/api/mastodon-sync/route.ts
+import { NextResponse } from "next/server";
+import { sql } from "@vercel/postgres";
+import { initDb, type Post } from "@/lib/db";
+import { isRequestAuthed } from "@/lib/auth";
+import { getOwnAccount, fetchOwnStatusesPage } from "@/lib/mastodon";
+
+// keep in sync with the type in lib/mastodon.ts
+type MastodonStatus = {
+  id: string;
+  url: string;
+  created_at: string;
+  content: string;
+  visibility: string;
+  reblog: MastodonStatus | null;
+  media_attachments: {
+    id: string;
+    type: string;
+    url: string;
+    preview_url: string;
+  }[];
+};
+
+// tiny HTML → plaintext stripper for Mastodon content
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
+export async function POST(request: Request) {
+  await initDb();
+
+  if (!(await isRequestAuthed())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const maxStatuses = Number(searchParams.get("max") ?? "120"); // cap how many we pull
+  const perPage = 40;
+
+  const account = await getOwnAccount();
+
+  const remoteStatuses: MastodonStatus[] = [];
+  let pageMaxId: string | null = null;
+
+  while (remoteStatuses.length < maxStatuses) {
+    const page = await fetchOwnStatusesPage(account.id, {
+      limit: perPage,
+      maxId: pageMaxId,
+    });
+
+    if (page.length === 0) break;
+
+    remoteStatuses.push(...page);
+    pageMaxId = page[page.length - 1].id;
+
+    if (page.length < perPage) break;
+  }
+
+  // Filter down to statuses you actually want mirrored
+  const visibleStatuses = remoteStatuses.filter((st) => {
+    // skip DMs:
+    if (st.visibility === "direct") return false;
+    // optionally skip boosts (reblogs) so you only mirror your own original posts:
+    if (st.reblog) return false;
+    return true;
+  });
+
+  const remoteIds = visibleStatuses.map((st) => st.id);
+  const remoteIdSet = new Set(remoteIds);
+
+  let importedCount = 0;
+  let reactivatedCount = 0;
+  let markedDeleted = 0;
+
+  // Upsert visible statuses as posts
+  for (const st of visibleStatuses) {
+    const body = stripHtml(st.content);
+    if (!body) continue;
+
+    const hasMedia = st.media_attachments && st.media_attachments.length > 0;
+    const imageUrl = hasMedia ? st.media_attachments[0].url : null;
+
+    const existing = await sql<Post>`
+      SELECT *
+      FROM posts
+      WHERE source = 'mastodon'
+        AND external_id = ${st.id}
+      LIMIT 1
+    `;
+
+    const kind: "text" | "photo" = hasMedia ? "photo" : "text";
+
+    if (existing.rows.length === 0) {
+      // Insert as a Mastodon-origin post
+      await sql`
+        INSERT INTO posts (kind, body, image_data, created_at, source, external_id, external_url, source_deleted)
+        VALUES (${kind}, ${body}, ${imageUrl}, ${st.created_at}, 'mastodon', ${st.id}, ${st.url}, FALSE)
+      `;
+      importedCount++;
+    } else {
+      const row = existing.rows[0];
+      // If we'd previously marked it deleted, bring it back
+      if (row.source_deleted) {
+        await sql`
+          UPDATE posts
+          SET source_deleted = FALSE
+          WHERE id = ${row.id}
+        `;
+        reactivatedCount++;
+      }
+      // you could also update body/image_data if you care about edits, but Mastodon edits are uncommon
+    }
+  }
+
+  // Soft-delete Mastodon posts that vanished from Mastodon's recent timeline
+  if (visibleStatuses.length > 0) {
+    const oldestRemoteCreatedAt = visibleStatuses
+      .map((st) => new Date(st.created_at).toISOString())
+      .sort()[0]; // earliest
+
+    // Local Mastodon posts we *thought* were active in this window
+    const locals = await sql<Pick<Post, "id" | "external_id">>`
+      SELECT id, external_id
+      FROM posts
+      WHERE source = 'mastodon'
+        AND source_deleted = FALSE
+        AND external_id IS NOT NULL
+        AND created_at >= ${oldestRemoteCreatedAt}
+    `;
+
+    for (const row of locals.rows) {
+      if (row.external_id && !remoteIdSet.has(row.external_id)) {
+        await sql`
+          UPDATE posts
+          SET source_deleted = TRUE
+          WHERE id = ${row.id}
+        `;
+        markedDeleted++;
+      }
+    }
+  }
+
+  return NextResponse.json({
+    imported: importedCount,
+    reactivated: reactivatedCount,
+    markedDeleted,
+    scannedRemote: visibleStatuses.length,
+  });
+}
+

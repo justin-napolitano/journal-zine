@@ -176,11 +176,12 @@ body {
 .post-media-text {
   display: flex;
   align-items: center;       /* vertical center */
-  justify-content: flex-start; /* left-align within the box */
+  justify-content: center; /* left-align within the box */
   padding: 1.5rem;
   width: 100%;
   height: 100%;
   text-align: left;
+  overflow-y: auto;          /* allow scr~oll instead of hard cut-off */
 }
 
 /* Text inside the media box */
@@ -190,9 +191,9 @@ body {
   line-height: 1.4;
 
   /* keep it to a single *visible* line */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: pre-wrap;
+  /*overflow: hidden;
+  text-overflow: ellipsis;*/
 }
 
 /* Meta row – also prevent wrapping so it can't change card height */
@@ -200,9 +201,18 @@ body {
   margin-top: 0.5rem;
   font-size: 0.75rem;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.post-source-badge {
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* Hashtags */
@@ -236,5 +246,29 @@ body {
     border-radius: 12px;
     height: 300px;
   }
+}
+/* Link-style cards inside the media block */
+.post-media-link {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.post-link-host {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.post-link-body {
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
