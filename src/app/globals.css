@@ -1,14 +1,17 @@
 /* app/globals.css */
 
 :root {
-  color-scheme: light;
-  --bg: #faf6f0;
-  --ink: #171412;
-  --muted: #7e746b;
-  --border: #e0d5c7;
-  --accent: #c05a2b;
-}
+  color-scheme: dark;
 
+  /* Gallery palette */
+  --bg: #070814;            /* deep inky backdrop */
+  --surface: #141726;       /* card background */
+  --surface-soft: #1a1e32;  /* composer / hover / subtle panels */
+  --ink: #f9fafb;           /* primary text */
+  --muted: #9ca3af;         /* metadata / labels */
+  --border: #262a3d;        /* card outline */
+  --accent: #f97360;        /* warm coral for badges/links/buttons */
+}
 *,
 *::before,
 *::after {
@@ -23,7 +26,7 @@ body {
 
 body {
   min-height: 100vh;
-  background: var(--bg);
+  background: radial-gradient(circle at top, #101326 0, var(--bg) 55%);
   color: var(--ink);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
     "Helvetica Neue", Arial, sans-serif;
@@ -31,43 +34,51 @@ body {
 
 /* Main page container */
 .main-shell {
-  max-width: 720px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 3rem 1.5rem 4rem;
 }
-
 /* Header */
 .site-heading {
-  font-size: 1.5rem;
-  letter-spacing: 0.06em;
+  font-size: 1.4rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .site-subtitle {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--muted);
-  margin-bottom: 2rem;
+  margin-bottom: 2.2rem;
 }
 
 /* Composer */
 .composer-card {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 1rem 1.25rem;
-  margin: 0 auto 2rem;
-  max-width: 540px; /* match post-card width */
-}
-
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  padding: 1rem 1.1rem 1.2rem;
+  margin: 0 auto 2.5rem;    /* center & add bottom space */
+  background: var(--surface-soft);
+  max-width: 560px;         /* same as .post-card */
+  width: 100%;
+}.composer-card {
+      border-radius: 18px;
+        border: 1px solid var(--border);
+          padding: 1rem 1.1rem 1.2rem;
+            margin: 0 auto 2.5rem;    /* center & add bottom space */
+              background: var(--surface-soft);
+                max-width: 560px;         /* same as .post-card */
+                  width: 100%;
+              }
 .composer-textarea {
   width: 100%;
   border: none;
   resize: none;
-  min-height: 40px;
+  min-height: 70px;
   background: transparent;
   font: inherit;
   color: inherit;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   outline: none;
 }
 
@@ -79,35 +90,13 @@ body {
   flex-wrap: wrap;
 }
 
-.composer-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.composer-file-label {
-  font-size: 0.8rem;
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.composer-file-input {
-  display: none;
-}
-
-.composer-meta {
-  font-size: 0.75rem;
-  color: var(--muted);
-}
-
 .btn-primary {
   border: 1px solid transparent;
-  background: var(--ink);
-  color: var(--bg);
-  padding: 0.4rem 0.9rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
+  background: var(--accent);
+  color: #111827;
+  padding: 0.42rem 0.95rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   border-radius: 999px;
   cursor: pointer;
@@ -118,52 +107,34 @@ body {
   cursor: default;
 }
 
-/* Feed layout */
+
 .feed {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+  align-items: center; /* center cards in the shell */
 }
 
-/* Post card – same outer footprint for all posts */
-/* Post card – EXACT same outer size for all posts */
 .post-card {
-  max-width: 540px;
-  margin: 0 auto;
-  border-radius: 18px;
-  padding: 1rem 1rem 0.75rem;
-  background: rgba(255, 255, 255, 0.9);
+  width: 100%;
+  max-width: 560px; /* narrower than the shell for “wall” margin */
+  border-radius: 20px;
+  padding: 1.1rem 1.1rem 0.9rem;
+  background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-
-  display: flex;
-  flex-direction: column;
-
-  /* fixed height so every card is identical */
-  height: 420px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
 }
 
-/* Shared media block – fixed height, same for text + photo */
+/* Shared media block */
 .post-media {
   width: 100%;
   border-radius: 16px;
   overflow: hidden;
-  background: #f3ebe1;
+  background: #111321;
+  aspect-ratio: 4 / 5;
   position: relative;
-
-  /* key: fixed height */
-  height: 320px;
-  flex: 0 0 auto;
 }
 
-/* Slightly taller on bigger screens if you want */
-@media (min-width: 900px) {
-  .post-media {
-    height: 340px;
-  }
-}
-
-/* Photo fills the frame */
 .post-image {
   display: block;
   width: 100%;
@@ -171,29 +142,24 @@ body {
   object-fit: cover;
 }
 
-/* Text-only post: text centered inside full frame */
-/* Text-only post: text centered vertically, left-aligned horizontally */
+/* TEXT TILE */
 .post-media-text {
-  display: flex;
-  align-items: center;       /* vertical center */
-  justify-content: center; /* left-align within the box */
+  display: block;
+  /*align-items: flex-start; */   /* top align vertically */
+  /*justify-content: flex-start;*//* left align horizontally */
   padding: 1.5rem;
   width: 100%;
   height: 100%;
   text-align: left;
-  overflow-y: auto;          /* allow scr~oll instead of hard cut-off */
+  overflow-y: auto;           /* still scroll long text */
 }
 
-/* Text inside the media box */
 .post-body {
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-
-  /* keep it to a single *visible* line */
   white-space: pre-wrap;
-  /*overflow: hidden;
-  text-overflow: ellipsis;*/
+  line-height: 1.5;
+  font-size: 0.97rem;
+  max-width: 32rem;          /* limit line length */
 }
 
 /* Meta row – also prevent wrapping so it can't change card height */
@@ -213,6 +179,7 @@ body {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  color: var(--accent);
 }
 
 /* Hashtags */
@@ -249,15 +216,16 @@ body {
 }
 /* Link-style cards inside the media block */
 .post-media-link {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: block;
+  /*flex-direction: column;
+  justify-content: center;*/
   gap: 0.5rem;
   padding: 1.25rem;
   width: 100%;
   height: 100%;
   text-decoration: none;
   color: inherit;
+  overflow-y: auto;
 }
 
 .post-link-host {
@@ -265,10 +233,18 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
+  margin-bottom: 0.5rem; /* ← add or increase this */
 }
 
 .post-link-body {
   font-size: 0.95rem;
   line-height: 1.4;
+}
+
+
+.page-head {
+  max-width: 560px;   /* same as .post-card & .composer-card */
+  width: 100%;
+  margin: 0 auto 2.5rem;
 }
 

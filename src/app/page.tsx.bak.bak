@@ -5,9 +5,10 @@ import { isRequestAuthed } from "@/lib/auth";
 export default async function Page() {
   await initDb();
 
-  const [posts, isAuthed] = await Promise.all([
+  // do both in parallel for fun
+  const [posts, authed] = await Promise.all([
     fetchPostsPage(null, 12),
-    isRequestAuthed(),
+    isRequestAuthed(),               // ⬅️ now returns a Promise<boolean>
   ]);
 
   const initialCursor = posts.length ? posts[posts.length - 1].id : null;
@@ -16,7 +17,7 @@ export default async function Page() {
     <JournalApp
       initialPosts={posts as Post[]}
       initialCursor={initialCursor}
-      isAuthed={isAuthed}
+      isAuthed={authed}
     />
   );
 }

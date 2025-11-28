@@ -71,16 +71,16 @@ export function JournalApp({ initialPosts, initialCursor, isAuthed }: Props) {
   function handleCreated(post: Post) {
     setPosts((prev) => [post, ...prev]);
   }
-
   return (
     <div className="main-shell">
-      <header style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem" }}>
+      <div className="page-head">
         <div>
           <div className="site-heading">journal</div>
           <div className="site-subtitle">
-            an ongoing stream of photos & fragments
+            an ongoing stream of photos &amp; fragments
           </div>
         </div>
+
         {!isAuthed && (
           <Link
             href="/login"
@@ -94,7 +94,7 @@ export function JournalApp({ initialPosts, initialCursor, isAuthed }: Props) {
             log in
           </Link>
         )}
-      </header>
+      </div>
 
       {isAuthed && <NewPostForm onCreated={handleCreated} />}
 
@@ -102,14 +102,16 @@ export function JournalApp({ initialPosts, initialCursor, isAuthed }: Props) {
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
+
+        <div ref={sentinelRef} className="sentinel" />
       </section>
 
-      <div ref={sentinelRef} className="sentinel" />
       {loadingMore && (
         <p className="composer-meta" style={{ marginTop: "1rem" }}>
           loading more…
         </p>
       )}
+
       {reachedEnd && posts.length > 0 && (
         <p className="composer-meta" style={{ marginTop: "1rem" }}>
           you’ve reached the first page.
@@ -118,4 +120,3 @@ export function JournalApp({ initialPosts, initialCursor, isAuthed }: Props) {
     </div>
   );
 }
-
