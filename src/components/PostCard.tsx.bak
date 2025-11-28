@@ -43,21 +43,21 @@ export function PostCard({ post }: Props) {
 
   return (
     <article className="post-card">
-      {/* Fixed media box – same for photo + text */}
+      {/* Fixed media box – SAME size for text + photo */}
       <div className="post-media">
         {isPhoto ? (
+          // PHOTO POST: image fills frame
           // eslint-disable-next-line @next/next/no-img-element
           <img src={post.image_data!} alt="" className="post-image" />
         ) : (
+          // TEXT POST: text centered in frame
           <div className="post-media-text">
             <div className="post-body">{content}</div>
           </div>
         )}
       </div>
 
-      {/* Fixed caption row – present for all posts */}
-      <div className="post-caption">{isPhoto ? content : null}</div>
-
+      {/* Meta row – same for all posts */}
       <div className="post-meta">
         {formatDate(post.created_at)} · {isPhoto ? "photo" : "note"}
       </div>
