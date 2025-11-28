@@ -1,24 +1,24 @@
-// src/components/PostCard.tsx
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import type { Post } from "@/lib/db";
 
 type Props = {
   post: Post;
 };
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
+function formatDate(iso: string | Date) {
+  const d = typeof iso === "string" ? new Date(iso) : iso;
   return d.toLocaleString(undefined, {
+    year: "numeric",
     month: "short",
     day: "numeric",
-    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
 }
 
+// Turn #tags into links
 function linkifyHashtags(text: string): React.ReactNode[] {
   const parts = text.split(/(#[a-zA-Z0-9_]+)/g);
   return parts.map((part, idx) => {
@@ -37,29 +37,77 @@ function linkifyHashtags(text: string): React.ReactNode[] {
   });
 }
 
+function getSourceLabel(source: Post["source"]) {
+  if (source === "local") return "journal";
+  return source; // "mastodon", "bluesky", etc. later
+}
+
+function getHost(url: string | null | undefined) {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    return u.host.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
 export function PostCard({ post }: Props) {
-  const content = useMemo(() => linkifyHashtags(post.body), [post.body]);
-  const isPhoto = Boolean(post.image_data);
+  const isPhoto = post.kind === "photo";
+  const isLink = post.kind === "link";
+  const content = linkifyHashtags(post.body || "");
+
+  const primaryLink = post.link_url || post.external_url || null;
+  const hostForLink = getHost(primaryLink);
 
   return (
     <article className="post-card">
-      {/* Fixed media box – SAME size for text + photo */}
       <div className="post-media">
-        {isPhoto ? (
-          // PHOTO POST: image fills frame
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.image_data!} alt="" className="post-image" />
+        {isPhoto && post.image_data ? (
+          // PHOTO CARD
+          <img src={post.image_data} alt="" className="post-image" />
+        ) : isLink && post.link_url ? (
+          // LINK CARD
+          <a
+            href={post.link_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="post-media-link"
+          >
+            <div className="post-link-host">
+              {hostForLink ?? post.link_url}
+            </div>
+            <div className="post-link-body">
+              {post.body && post.body.length > 0
+                ? post.body
+                : post.link_url}
+            </div>
+          </a>
         ) : (
-          // TEXT POST: text centered in frame
+          // TEXT CARD
           <div className="post-media-text">
             <div className="post-body">{content}</div>
           </div>
         )}
       </div>
 
-      {/* Meta row – same for all posts */}
       <div className="post-meta">
-        {formatDate(post.created_at)} · {isPhoto ? "photo" : "note"}
+        <span>{formatDate(post.created_at)}</span>
+        <span className="post-source-badge">
+          {getSourceLabel(post.source)}
+        </span>
+        {post.external_url && (
+          <>
+            <span>·</span>
+            <a
+              href={post.external_url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              view on {getHost(post.external_url) ?? "source"}
+            </a>
+          </>
+        )}
       </div>
     </article>
   );
