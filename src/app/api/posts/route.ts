@@ -4,6 +4,7 @@ import { sql } from "@vercel/postgres";
 import { initDb, fetchPostsPage, type Post } from "@/lib/db";
 import { isRequestAuthed } from "@/lib/auth";
 import { postToMastodon, uploadMediaToMastodon } from "@/lib/mastodon";
+import { extractSingleUrl } from "@/lib/url";
 
 export async function GET(request: Request) {
   await initDb();
@@ -28,22 +29,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const data = await request.json();
+  let data: any;
+  try {
+    data = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
   const rawBody = (data.body ?? "").toString();
   const body = rawBody.trim();
-  const imageData: string | null = data.imageData ?? null;
+  const imageData: string | null =
+    typeof data.imageData === "string" ? data.imageData : null;
 
-  const targets: string[] = Array.isArray(data.targets)
-    ? data.targets.filter((t) => typeof t === "string")
+  const rawTargets: unknown = data.targets;
+  const targets: string[] = Array.isArray(rawTargets)
+    ? rawTargets.filter((t): t is string => typeof t === "string")
     : [];
 
   const wantsMastodon = targets.includes("mastodon");
 
-  if (!body) {
-    return NextResponse.json({ error: "Body is required" }, { status: 400 });
+  if (!body && !imageData) {
+    return NextResponse.json(
+      { error: "Body or image is required" },
+      { status: 400 },
+    );
   }
 
-  // per-site limits
+  // Character limits – journal vs Mastodon
   const maxForJournal = 1000;
   const maxForMastodon = 500;
   const effectiveMax = wantsMastodon ? maxForMastodon : maxForJournal;
@@ -57,38 +69,56 @@ export async function POST(request: Request) {
     );
   }
 
-  if (imageData && typeof imageData !== "string") {
-    return NextResponse.json(
-      { error: "Invalid image data" },
-      { status: 400 },
-    );
-  }
+  // Detect link-style posts
+  const linkUrl = extractSingleUrl(body);
+  const kind: "text" | "photo" | "link" =
+    imageData ? "photo" : linkUrl ? "link" : "text";
 
-  const kind: "text" | "photo" = imageData ? "photo" : "text";
-
-  // 1) create local post in your DB
+  // Store locally first
   const { rows } = await sql<Post>`
-    INSERT INTO posts (kind, body, image_data)
-    VALUES (${kind}, ${body}, ${imageData})
+    INSERT INTO posts (
+      kind,
+      body,
+      image_data,
+      source,
+      external_id,
+      external_url,
+      link_url
+    )
+    VALUES (
+      ${kind},
+      ${body},
+      ${imageData},
+      'local',
+      NULL,
+      NULL,
+      ${linkUrl}
+    )
     RETURNING *
   `;
-  const post = rows[0];
 
-  // 2) cross-post to Mastodon only if requested
+  let post = rows[0];
+
+  // Optional: cross-post to Mastodon
   if (wantsMastodon) {
     try {
+      // You already have these helpers in lib/mastodon.ts
+      // If names differ, adjust accordingly.
+      // import { uploadMediaToMastodon, postToMastodon } from "@/lib/mastodon";
       let mediaIds: string[] | undefined = undefined;
 
-      // If this post has an image, upload it to Mastodon first
       if (imageData) {
         const mediaId = await uploadMediaToMastodon(imageData);
         mediaIds = [mediaId];
       }
 
       await postToMastodon(body, mediaIds);
+
+      // If later you want to capture mastodon id/url here,
+      // you can read the response from postToMastodon and UPDATE this post.
     } catch (err) {
-      console.error("Failed to cross-post to Mastodon:", err);
-      // v1: log only; later you could store status in DB
+      console.error("Failed to cross-post to Mastodon from POST /api/posts:", err);
+      // but we don't fail the local create
     }
   }
 
