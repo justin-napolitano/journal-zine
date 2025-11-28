@@ -1,40 +1,82 @@
-// src/lib/db.ts
-import { sql } from "@vercel/postgres";
+// lib/db.ts
+  return (
+    <div className="main-shell">
+      {/* Header */}
+      <div className="page-head">
+        <div>
+          <div className="site-heading">journal</div>
+          <div className="site-subtitle">
+            an ongoing stream of photos &amp; fragments
+          </div>
+        </div>
+
+        {!isAuthed && (
+          <Link
+            href="/login"
+            style={{
+              fontSize: "0.75rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--muted)",
+            }}
+          >
+            log in
+          </Link>
+        )}
+      </div>
+
+      {/* Centered column for search + composer + feed */}
+      <div className="journal-column">
+        {/* Single search bar */}
+        <div className="journal-search">
+          <form
+            className="journal-search-form"
+            onSubmit={handleSearchSubmit}
+          >
+            <div className="journal-search-row">
+              <input
+                className="journal-search-input"
+                type="text"
+                placeholder='search… (try "tag:journal", "type:photos", "source:mastodon")'
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <button
+                className="journal-search-button"
+                type="submit"
+                disabled={loadingInitial}
+              >
+                {loadingInitial ? "…" : "Search"}
+              </button>
+            </div>
+import { sql } from '@vercel/postgres';
 
 export type Post = {
   id: number;
   created_at: string;
-  kind: "text" | "photo" | "link";
+  kind: 'text' | 'photo';
   body: string;
   image_data: string | null;
-
-  // External / source metadata
+  // NEW FIELDS for external sources (Mastodon, etc.)
   source: "local" | "mastodon" | string;
   external_id: string | null;
   external_url: string | null;
   source_deleted: boolean;
-
-  // For link-style posts
+  // NEW
   link_url: string | null;
 };
 
 export async function initDb() {
-  // Idempotent: safe to call multiple times
+  // Safe to call more than once; it’s idempotent.
   await sql`
     CREATE TABLE IF NOT EXISTS posts (
       id SERIAL PRIMARY KEY,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      kind TEXT NOT NULL CHECK (kind IN ('text', 'photo', 'link')),
-      body TEXT NOT NULL,
-      image_data TEXT,
-      source TEXT NOT NULL DEFAULT 'local',
-      external_id TEXT,
-      external_url TEXT,
-      source_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-      link_url TEXT
+      kind TEXT NOT NULL CHECK (kind IN ('text', 'photo')),
+      body TEXT NOT NULL CHECK (char_length(body) <= 500),
+      image_data TEXT
     );
   `;
-
   await sql`
     CREATE INDEX IF NOT EXISTS idx_posts_created_at
     ON posts (created_at DESC);
