@@ -1,9 +1,48 @@
 // src/app/api/posts/route.ts
 import { NextResponse } from "next/server";
 import { sql } from "@vercel/postgres";
-import { initDb, fetchPostsPage, type Post } from "@/lib/db";
+import { initDb, fetchPostsPage, type Post, type PostFilters } from "@/lib/db";
 import { isRequestAuthed } from "@/lib/auth";
-import { postToMastodon } from "@/lib/mastodon";
+import { postToMastodon, uploadMediaToMastodon } from "@/lib/mastodon";
+import { extractSingleUrl } from "@/lib/url";
+
+const MAX_FOR_JOURNAL = 1000;
+const MAX_FOR_MASTODON = 500;
+const DEFAULT_LIMIT = 12;
+const MAX_LIMIT = 50;
+
+export async function GET(request: Request) {
+  await initDb();
+
+  const { searchParams } = new URL(request.url);
+  const cursorParam = searchParams.get("cursor");
+  const limitParam = searchParams.get("limit");
+
+  const cursor = cursorParam ? Number(cursorParam) : null;
+  const limit = limitParam
+    ? Math.min(Number(limitParam), MAX_LIMIT)
+    : DEFAULT_LIMIT;
+
+  const source = searchParams.get("source") ?? undefined;
+  const rawKind = searchParams.get("kind") ?? undefined;
+  const kind: PostFilters["kind"] | undefined =
+    rawKind === "text" ||
+    rawKind === "photo" ||
+    rawKind === "link" ||
+    rawKind === "all"
+      ? rawKind
+      : undefined;
+
+  const tag = searchParams.get("tag") ?? undefined;
+  const q = searchParams.get("q") ?? undefined;
+
+  const filters: PostFilters = { source, kind, tag, q };
+
+  const posts = await fetchPostsPage(cursor, limit, filters);
+  const nextCursor = posts.length ? posts[posts.length - 1].id : null;
+
+  return NextResponse.json({ posts, nextCursor });
+}
 
 export async function POST(request: Request) {
   await initDb();
@@ -12,56 +51,90 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const data = await request.json();
+  let data: any;
+  try {
+    data = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
   const rawBody = (data.body ?? "").toString();
   const body = rawBody.trim();
-  const imageData: string | null = data.imageData ?? null;
+  const imageData: string | null =
+    typeof data.imageData === "string" && data.imageData.length > 0
+      ? data.imageData
+      : null;
 
-  const targets: string[] = Array.isArray(data.targets)
-    ? data.targets.filter((t) => typeof t === "string")
+  const rawTargets: unknown = data.targets;
+  const targets: string[] = Array.isArray(rawTargets)
+    ? rawTargets.filter((t): t is string => typeof t === "string")
     : [];
 
   const wantsMastodon = targets.includes("mastodon");
 
-  if (!body) {
-    return NextResponse.json({ error: "Body is required" }, { status: 400 });
+  if (!body && !imageData) {
+    return NextResponse.json(
+      { error: "Body or image is required" },
+      { status: 400 },
+    );
   }
 
-  // per-site limits
-  const maxForJournal = 1000;
-  const maxForMastodon = 500;
-  const effectiveMax = wantsMastodon ? maxForMastodon : maxForJournal;
+  const effectiveMax = wantsMastodon ? MAX_FOR_MASTODON : MAX_FOR_JOURNAL;
 
   if (body.length > effectiveMax) {
     return NextResponse.json(
-      { error: `Body is too long (max ${effectiveMax} characters for selected targets)` },
-      { status: 400 }
+      {
+        error: `Body is too long (max ${effectiveMax} characters for selected targets)`,
+      },
+      { status: 400 },
     );
   }
 
-  if (imageData && typeof imageData !== "string") {
-    return NextResponse.json(
-      { error: "Invalid image data" },
-      { status: 400 }
-    );
-  }
-
-  const kind: "text" | "photo" = imageData ? "photo" : "text";
+  const linkUrl = extractSingleUrl(body);
+  const kind: Post["kind"] =
+    imageData ? "photo" : linkUrl ? "link" : "text";
 
   const { rows } = await sql<Post>`
-    INSERT INTO posts (kind, body, image_data)
-    VALUES (${kind}, ${body}, ${imageData})
+    INSERT INTO posts (
+      kind,
+      body,
+      image_data,
+      source,
+      external_id,
+      external_url,
+      link_url
+    )
+    VALUES (
+      ${kind},
+      ${body},
+      ${imageData},
+      'local',
+      NULL,
+      NULL,
+      ${linkUrl}
+    )
     RETURNING *
   `;
-  const post = rows[0];
 
-  // cross-post only where requested
+  let post = rows[0];
+
   if (wantsMastodon) {
     try {
-      await postToMastodon(body);
+      let mediaIds: string[] | undefined = undefined;
+
+      if (imageData) {
+        const mediaId = await uploadMediaToMastodon(imageData);
+        if (mediaId) {
+          mediaIds = [mediaId];
+        }
+      }
+
+      await postToMastodon(body, mediaIds);
     } catch (err) {
-      console.error("Failed to post to Mastodon:", err);
-      // v1: log and continue
+      console.error(
+        "Failed to cross-post to Mastodon from POST /api/posts:",
+        err,
+      );
     }
   }
 
