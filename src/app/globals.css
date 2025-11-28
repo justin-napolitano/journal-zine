@@ -107,6 +107,147 @@ body {
   cursor: default;
 }
 
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.25rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.filter-label {
+  font-weight: 500;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.filter-field-wide {
+  flex: 1 1 160px;
+}
+
+.filter-input {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  min-width: 120px;
+}
+
+.filter-input::placeholder {
+  color: var(--muted);
+}
+
+.filter-apply {
+  font-size: 0.7rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent-blue);
+  color: var(--bg-elevated);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filter-apply:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.journal-column {
+  max-width: 560px; /* or whatever matches your cards */
+  margin: 0 auto;
+}
+
+.journal-search {
+  margin: 1rem 0 1.25rem;
+}
+
+.journal-search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.journal-search-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.journal-search-input {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  font-size: 0.85rem;
+}
+
+.journal-search-button {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent-blue);
+  color: var(--bg-elevated);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.journal-search-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.journal-search-hint {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+/* hashtag buttons inside posts */
+button.hashtag {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--accent-blue);
+  cursor: pointer;
+}
+
+button.hashtag:hover {
+  text-decoration: underline;
+}
+
+
+/* Hashtag buttons */
+button.hashtag {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--accent-blue);
+  cursor: pointer;
+}
+
+button.hashtag:hover {
+  text-decoration: underline;
+}
+
 
 .feed {
   display: flex;
