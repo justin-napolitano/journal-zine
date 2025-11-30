@@ -1,0 +1,221 @@
+// src/app/api/integrations/github-weekly/route.ts
+export const runtime = "nodejs";
+
+import { NextResponse } from "next/server";
+import { sql } from "@vercel/postgres";
+import type { Post } from "@/lib/db";
+import {
+  fetchPublicRepos,
+  fetchRecentMergedPullsForRepo,
+} from "@/lib/github";
+import { postToMastodon } from "@/lib/mastodon";
+
+const ENABLE_MASTO =
+  process.env.GITHUB_SYNC_ENABLE_MASTODON === "true";
+const CRON_SECRET = process.env.CRON_SECRET;
+
+const MAX_BODY_CHARS = 300;
+const TAG_LINE = "#github #weekly";
+
+const DEFAULT_WINDOW_DAYS = 7;
+
+function getSinceIso(windowDays: number): string {
+  const ms = windowDays * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  return new Date(now - ms).toISOString();
+}
+
+/**
+ * Build a 300-char summary of merged PRs per repo, dropping whole lines
+ * if needed to stay within the limit.
+ */
+function buildWeeklyGithubBody(opts: {
+  windowDays: number;
+  repoStats: { repo: string; mergedCount: number }[];
+}): string {
+  const { windowDays, repoStats } = opts;
+
+  const lines: string[] = [];
+  lines.push(`github activity (last ${windowDays} days):`);
+
+  const totalMerged = repoStats.reduce(
+    (sum, r) => sum + r.mergedCount,
+    0,
+  );
+  lines.push(`- ${totalMerged} merged PRs total`);
+
+  const activeRepos = repoStats.filter((r) => r.mergedCount > 0);
+  if (activeRepos.length > 0) {
+    lines.push("");
+    lines.push("by repo:");
+    activeRepos.forEach((r) => {
+      lines.push(`- ${r.repo}: ${r.mergedCount} merged PRs`);
+    });
+  }
+
+  let core = lines.join("\n").trimEnd();
+  const sep = core ? "\n\n" : "";
+
+  while (
+    core.length + sep.length + TAG_LINE.length >
+    MAX_BODY_CHARS
+  ) {
+    const lastNewline = core.lastIndexOf("\n");
+    if (lastNewline === -1) {
+      core = "";
+      break;
+    }
+    core = core.slice(0, lastNewline).trimEnd();
+  }
+
+  if (!core) {
+    return TAG_LINE;
+  }
+
+  return `${core}\n\n${TAG_LINE}`;
+}
+
+/**
+ * GET /api/integrations/github-weekly
+ *
+ * Query params:
+ *   - key: CRON_SECRET (optional, if set in env)
+ *   - windowDays: how many days back to look (default 7)
+ *
+ * Example (weekly cron):
+ *   /api/integrations/github-weekly?key=YOUR_SECRET&windowDays=7
+ */
+export async function GET(request: Request) {
+  if (CRON_SECRET) {
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    if (key !== CRON_SECRET) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+  }
+
+  const url = new URL(request.url);
+  const windowDaysParam = url.searchParams.get("windowDays");
+  const windowDays =
+    windowDaysParam && !Number.isNaN(Number(windowDaysParam))
+      ? Math.max(1, Number(windowDaysParam))
+      : DEFAULT_WINDOW_DAYS;
+
+  const sinceIso = getSinceIso(windowDays);
+
+  const repos = await fetchPublicRepos();
+  if (repos.length === 0) {
+    return NextResponse.json({
+      inserted: 0,
+      repos: 0,
+      message: "no public repos found",
+    });
+  }
+
+  const repoStats: { repo: string; mergedCount: number }[] = [];
+
+  for (const repo of repos) {
+    const merged = await fetchRecentMergedPullsForRepo(
+      repo,
+      sinceIso,
+    );
+    if (merged.length > 0) {
+      repoStats.push({
+        repo: repo.full_name,
+        mergedCount: merged.length,
+      });
+    }
+  }
+
+  const totalMerged = repoStats.reduce(
+    (sum, r) => sum + r.mergedCount,
+    0,
+  );
+
+  if (totalMerged === 0) {
+    return NextResponse.json({
+      inserted: 0,
+      repos: repos.length,
+      merged: 0,
+      message: "no merged PRs in window",
+    });
+  }
+
+  const body = buildWeeklyGithubBody({ windowDays, repoStats });
+
+  // one snapshot per day + window size
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const externalId = `github-weekly-${windowDays}-${todayKey}`;
+
+  const existing = await sql<Post>`
+    SELECT *
+    FROM posts
+    WHERE source = 'github'
+      AND external_id = ${externalId}
+    LIMIT 1
+  `;
+
+  if (existing.rows.length > 0) {
+    return NextResponse.json({
+      inserted: 0,
+      repos: repos.length,
+      merged: totalMerged,
+      message: "weekly snapshot already exists for today",
+    });
+  }
+
+  const { rows } = await sql<Post>`
+    INSERT INTO posts (
+      kind,
+      body,
+      image_data,
+      source,
+      external_id,
+      external_url,
+      source_deleted,
+      link_url
+    )
+    VALUES (
+      'text',
+      ${body},
+      NULL,
+      'github',
+      ${externalId},
+      NULL,
+      FALSE,
+      NULL
+    )
+    RETURNING *
+  `;
+
+  let post = rows[0];
+
+  if (ENABLE_MASTO) {
+    try {
+      const status = await postToMastodon(body, undefined);
+
+      if (status && status.url) {
+        const updated = await sql<Post>`
+          UPDATE posts
+          SET external_url = ${status.url}
+          WHERE id = ${post.id}
+          RETURNING *
+        `;
+        post = updated.rows[0];
+      }
+    } catch (err) {
+      console.error(
+        "GitHub weekly → Mastodon cross-post failed:",
+        err,
+      );
+    }
+  }
+
+  return NextResponse.json({
+    inserted: 1,
+    repos: repos.length,
+    merged: totalMerged,
+    bodyLength: body.length,
+  });
+}
+
