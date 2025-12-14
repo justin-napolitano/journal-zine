@@ -1,5 +1,6 @@
 // src/app/api/posts/route.ts
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { sql } from "@vercel/postgres";
 import {
   initDb,
@@ -7,14 +8,33 @@ import {
   type Post,
   type PostFilters,
 } from "@/lib/db";
-import { isRequestAuthed } from "@/lib/auth";
 import { postToMastodon, uploadMediaToMastodon } from "@/lib/mastodon";
+import { postToBluesky } from "@/lib/bluesky";
 import { extractSingleUrl } from "@/lib/url";
 
 const MAX_FOR_JOURNAL = 1000;
 const MAX_FOR_MASTODON = 500;
+const MAX_FOR_BLUESKY = 300;
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
+
+async function isRequestAuthed(): Promise<boolean> {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("journal_session")?.value;
+  const secret = process.env.ADMIN_SESSION_SECRET;
+
+  // Dev convenience: allow the old "1" cookie value locally
+  if (process.env.NODE_ENV === "development" && session === "1") {
+    return true;
+  }
+
+  if (!secret) {
+    // No secret configured → treat as locked-down rather than wide open
+    return false;
+  }
+
+  return session === secret;
+}
 
 function normalizeSource(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
@@ -145,7 +165,6 @@ export async function GET(request: Request) {
   return NextResponse.json({ posts, nextCursor });
 }
 
-// POST stays the same behavior-wise
 export async function POST(request: Request) {
   await initDb();
 
@@ -173,6 +192,7 @@ export async function POST(request: Request) {
     : [];
 
   const wantsMastodon = targets.includes("mastodon");
+  const wantsBluesky = targets.includes("bluesky");
 
   if (!body && !imageData) {
     return NextResponse.json(
@@ -181,7 +201,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const effectiveMax = wantsMastodon ? MAX_FOR_MASTODON : MAX_FOR_JOURNAL;
+  // Character limits – keep everything within Bluesky if selected
+  let effectiveMax = MAX_FOR_JOURNAL;
+  if (wantsMastodon) {
+    effectiveMax = Math.min(effectiveMax, MAX_FOR_MASTODON);
+  }
+  if (wantsBluesky) {
+    effectiveMax = Math.min(effectiveMax, MAX_FOR_BLUESKY);
+  }
 
   if (body.length > effectiveMax) {
     return NextResponse.json(
@@ -220,6 +247,7 @@ export async function POST(request: Request) {
 
   let post = rows[0];
 
+  // Optional: cross-post to Mastodon
   if (wantsMastodon) {
     try {
       let mediaIds: string[] | undefined = undefined;
@@ -235,6 +263,18 @@ export async function POST(request: Request) {
     } catch (err) {
       console.error(
         "Failed to cross-post to Mastodon from POST /api/posts:",
+        err,
+      );
+    }
+  }
+
+  // Optional: cross-post to Bluesky
+  if (wantsBluesky) {
+    try {
+      await postToBluesky(body);
+    } catch (err) {
+      console.error(
+        "Failed to cross-post to Bluesky from POST /api/posts:",
         err,
       );
     }

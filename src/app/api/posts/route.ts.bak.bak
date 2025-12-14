@@ -14,7 +14,6 @@ import { extractSingleUrl } from "@/lib/url";
 
 const MAX_FOR_JOURNAL = 1000;
 const MAX_FOR_MASTODON = 500;
-const MAX_FOR_BLUESKY = 300;
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 
@@ -147,6 +146,7 @@ export async function GET(request: Request) {
   return NextResponse.json({ posts, nextCursor });
 }
 
+// POST stays the same behavior-wise
 export async function POST(request: Request) {
   await initDb();
 
@@ -184,12 +184,16 @@ export async function POST(request: Request) {
   }
 
   // Character limits – keep everything within Bluesky if selected
-  let effectiveMax = MAX_FOR_JOURNAL;
+  const maxForJournal = 1000;
+  const maxForMastodon = 500;
+  const maxForBluesky = 300;
+
+  let effectiveMax = maxForJournal;
   if (wantsMastodon) {
-    effectiveMax = Math.min(effectiveMax, MAX_FOR_MASTODON);
+    effectiveMax = Math.min(effectiveMax, maxForMastodon);
   }
   if (wantsBluesky) {
-    effectiveMax = Math.min(effectiveMax, MAX_FOR_BLUESKY);
+    effectiveMax = Math.min(effectiveMax, maxForBluesky);
   }
 
   if (body.length > effectiveMax) {
@@ -229,7 +233,6 @@ export async function POST(request: Request) {
 
   let post = rows[0];
 
-  // Optional: cross-post to Mastodon
   if (wantsMastodon) {
     try {
       let mediaIds: string[] | undefined = undefined;
@@ -245,18 +248,6 @@ export async function POST(request: Request) {
     } catch (err) {
       console.error(
         "Failed to cross-post to Mastodon from POST /api/posts:",
-        err,
-      );
-    }
-  }
-
-  // Optional: cross-post to Bluesky
-  if (wantsBluesky) {
-    try {
-      await postToBluesky(body);
-    } catch (err) {
-      console.error(
-        "Failed to cross-post to Bluesky from POST /api/posts:",
         err,
       );
     }
