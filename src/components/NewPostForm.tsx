@@ -1,9 +1,13 @@
 // src/components/NewPostForm.tsx
 "use client";
 
-import { useState, useRef, FormEvent, ChangeEvent, KeyboardEvent } from "react";
-//import type { Post } from "@/lib/db";
-// AFTER
+import {
+  useState,
+  useRef,
+  FormEvent,
+  ChangeEvent,
+  KeyboardEvent,
+} from "react";
 import type { Post } from "@/lib/posts";
 
 type Props = {
@@ -14,15 +18,28 @@ export function NewPostForm({ onCreated }: Props) {
   const [body, setBody] = useState("");
   const [imageData, setImageData] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [postToMastodon, setPostToMastodon] = useState(true); // default ON for now
+  const [postToMastodon, setPostToMastodon] = useState(true); // default ON
+  const [postToBluesky, setPostToBluesky] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // local vs Mastodon limits
   const maxForJournal = 1000;
   const maxForMastodon = 500;
+  const maxForBluesky = 300;
 
-  const effectiveMax = postToMastodon ? maxForMastodon : maxForJournal;
+  let effectiveMax = maxForJournal;
+  if (postToMastodon) {
+    effectiveMax = Math.min(effectiveMax, maxForMastodon);
+  }
+  if (postToBluesky) {
+    effectiveMax = Math.min(effectiveMax, maxForBluesky);
+  }
+
   const remaining = effectiveMax - body.length;
+  const limitLabel = postToBluesky
+    ? " (bluesky limit)"
+    : postToMastodon
+      ? " (mastodon limit)"
+      : "";
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
     // keep things microbloggy — still single-line
@@ -54,6 +71,7 @@ export function NewPostForm({ onCreated }: Props) {
     try {
       const targets: string[] = [];
       if (postToMastodon) targets.push("mastodon");
+      if (postToBluesky) targets.push("bluesky");
 
       const res = await fetch("/api/posts", {
         method: "POST",
@@ -115,11 +133,31 @@ export function NewPostForm({ onCreated }: Props) {
             )}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", alignItems: "flex-end" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.25rem",
+              alignItems: "flex-end",
+            }}
+          >
             {/* Target selection */}
-            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "0.75rem",
+                alignItems: "center",
+              }}
+            >
               <span className="composer-meta">post to:</span>
-              <label style={{ display: "flex", gap: "0.25rem", alignItems: "center", fontSize: "0.8rem" }}>
+              <label
+                style={{
+                  display: "flex",
+                  gap: "0.25rem",
+                  alignItems: "center",
+                  fontSize: "0.8rem",
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={postToMastodon}
@@ -127,15 +165,38 @@ export function NewPostForm({ onCreated }: Props) {
                 />
                 mastodon
               </label>
-              {/* later: add more platforms here */}
+              <label
+                style={{
+                  display: "flex",
+                  gap: "0.25rem",
+                  alignItems: "center",
+                  fontSize: "0.8rem",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={postToBluesky}
+                  onChange={(e) => setPostToBluesky(e.target.checked)}
+                />
+                bluesky
+              </label>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+              }}
+            >
               <span className="composer-meta">
-                {remaining} characters left
-                {postToMastodon && " (mastodon limit)"}
+                {remaining} characters left{limitLabel}
               </span>
-              <button type="submit" className="btn-primary" disabled={disabled}>
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={disabled}
+              >
                 publish
               </button>
             </div>
