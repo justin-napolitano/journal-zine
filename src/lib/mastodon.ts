@@ -1,14 +1,20 @@
 // src/lib/mastodon.ts
 
-const baseUrl = process.env.MASTODON_BASE_URL;
-const token = process.env.MASTODON_ACCESS_TOKEN;
+const ENV_BASE_URL = process.env.MASTODON_BASE_URL;
+const ENV_TOKEN = process.env.MASTODON_ACCESS_TOKEN;
 
-function ensureConfigured(): asserts baseUrl is string & token is string {
+function getConfig() {
+  return { baseUrl: ENV_BASE_URL, token: ENV_TOKEN };
+}
+
+function requireConfig(): { baseUrl: string; token: string } {
+  const { baseUrl, token } = getConfig();
   if (!baseUrl || !token) {
     throw new Error(
       "Mastodon not configured (MASTODON_BASE_URL / MASTODON_ACCESS_TOKEN missing)",
     );
   }
+  return { baseUrl, token };
 }
 // Types for reading timelines
 
@@ -36,7 +42,7 @@ type MastodonAccount = {
 
 // generic JSON fetch with auth
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
-  ensureConfigured();
+  const { baseUrl, token } = requireConfig();
 
   const res = await fetch(`${baseUrl}${path}`, {
     ...init,
@@ -105,7 +111,7 @@ export async function fetchOwnStatusesPage(
  * Expects `imageData` to be a data URL string.
  */
 export async function uploadMediaToMastodon(imageData: string): Promise<string> {
-  ensureConfigured();
+  const { baseUrl, token } = requireConfig();
 
   const blob = dataUrlToBlob(imageData);
 
@@ -145,6 +151,7 @@ export async function postToMastodon(
   status: string,
   mediaIds?: string[],
 ) {
+  const { baseUrl, token } = getConfig();
   if (!baseUrl || !token) {
     // Integration disabled if env vars are missing
     return null;
