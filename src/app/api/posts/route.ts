@@ -13,6 +13,12 @@ import { extractSingleUrl } from "@/lib/url";
 import { isRequestAuthed } from "@/lib/auth";
 import { getEffectivePostLimit, graphemeLength } from "@/lib/text";
 
+type PostRequestPayload = {
+  body?: unknown;
+  imageData?: unknown;
+  targets?: unknown;
+};
+
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 
@@ -152,9 +158,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let data: any;
+  let data: PostRequestPayload;
   try {
-    data = await request.json();
+    data = (await request.json()) as PostRequestPayload;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

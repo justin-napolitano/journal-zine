@@ -3,9 +3,11 @@
 const baseUrl = process.env.MASTODON_BASE_URL;
 const token = process.env.MASTODON_ACCESS_TOKEN;
 
-function ensureConfigured() {
+function ensureConfigured(): asserts baseUrl is string & token is string {
   if (!baseUrl || !token) {
-    throw new Error("Mastodon not configured (MASTODON_BASE_URL / MASTODON_ACCESS_TOKEN missing)");
+    throw new Error(
+      "Mastodon not configured (MASTODON_BASE_URL / MASTODON_ACCESS_TOKEN missing)",
+    );
   }
 }
 // Types for reading timelines
@@ -34,9 +36,7 @@ type MastodonAccount = {
 
 // generic JSON fetch with auth
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!baseUrl || !token) {
-    throw new Error("Mastodon not configured (MASTODON_BASE_URL / MASTODON_ACCESS_TOKEN missing)");
-  }
+  ensureConfigured();
 
   const res = await fetch(`${baseUrl}${path}`, {
     ...init,
@@ -105,10 +105,7 @@ export async function fetchOwnStatusesPage(
  * Expects `imageData` to be a data URL string.
  */
 export async function uploadMediaToMastodon(imageData: string): Promise<string> {
-  if (!baseUrl || !token) {
-    // treat as "no integration" case
-    throw new Error("Mastodon media upload requested but Mastodon not configured");
-  }
+  ensureConfigured();
 
   const blob = dataUrlToBlob(imageData);
 
@@ -138,13 +135,22 @@ export async function uploadMediaToMastodon(imageData: string): Promise<string> 
 /**
  * Cross-post a status to Mastodon, optionally with attached media_ids.
  */
-export async function postToMastodon(status: string, mediaIds?: string[]) {
+type MastodonStatusPayload = {
+  status: string;
+  visibility: "public" | "unlisted" | "private" | "direct";
+  media_ids?: string[];
+};
+
+export async function postToMastodon(
+  status: string,
+  mediaIds?: string[],
+) {
   if (!baseUrl || !token) {
     // Integration disabled if env vars are missing
     return null;
   }
 
-  const payload: any = {
+  const payload: MastodonStatusPayload = {
     status,
     visibility: "public",
   };
@@ -170,4 +176,3 @@ export async function postToMastodon(status: string, mediaIds?: string[]) {
 
   return JSON.parse(text);
 }
-

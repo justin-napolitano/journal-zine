@@ -8,11 +8,15 @@ export const POST_LIMITS = {
 
 let cachedSegmenter: Intl.Segmenter | null | undefined;
 
+type IntlWithSegmenter = typeof Intl & {
+  Segmenter?: typeof Intl.Segmenter;
+};
+
 function getSegmenter(): Intl.Segmenter | null {
   if (cachedSegmenter !== undefined) return cachedSegmenter;
   const hasSegmenter =
     typeof Intl !== "undefined" &&
-    typeof (Intl as any).Segmenter === "function";
+    typeof (Intl as IntlWithSegmenter).Segmenter === "function";
   cachedSegmenter = hasSegmenter
     ? new Intl.Segmenter("en", { granularity: "grapheme" })
     : null;
@@ -26,11 +30,7 @@ export function graphemeLength(value: string): number {
     return Array.from(value).length;
   }
 
-  let count = 0;
-  for (const _ of segmenter.segment(value)) {
-    count++;
-  }
-  return count;
+  return Array.from(segmenter.segment(value)).length;
 }
 
 export function getEffectivePostLimit(opts: {
