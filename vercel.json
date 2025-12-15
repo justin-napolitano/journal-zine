@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/integrations/github-weekly-sync?windowDays=7&key=${CRON_SECRET}",
-      "schedule": "0 13 * * MON"
+      "schedule": "0 13 * * 1"
     },
     {
       "path": "/api/integrations/github-sync?windowDays=7&key=${CRON_SECRET}",
