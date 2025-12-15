@@ -1,7 +1,12 @@
+site_name: Journal Zine Docs
+site_description: Internal reference for the Journal Zine Next.js app and integrations.
+docs_dir: .
 nav:
+  - Home: index.md
   - Architecture: journal-architecture-overview.md
   - Auth & Sessions: journal-auth-and-sessions.md
   - Mastodon: journal-mastodon-integration.md
+  - Bluesky: journal-bluesky-integration.md
+  - Integrations API: journal-integrations-api.md
   - Frontend & Layout: journal-frontend-and-layout.md
   - Dev & Ops: journal-dev-notes-and-maintenance.md
-
