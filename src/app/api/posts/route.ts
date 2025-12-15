@@ -1,6 +1,5 @@
 // src/app/api/posts/route.ts
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { sql } from "@vercel/postgres";
 import {
   initDb,
@@ -11,30 +10,13 @@ import {
 import { postToMastodon, uploadMediaToMastodon } from "@/lib/mastodon";
 import { postToBluesky } from "@/lib/bluesky";
 import { extractSingleUrl } from "@/lib/url";
+import { isRequestAuthed } from "@/lib/auth";
 
 const MAX_FOR_JOURNAL = 1000;
 const MAX_FOR_MASTODON = 500;
 const MAX_FOR_BLUESKY = 300;
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
-
-async function isRequestAuthed(): Promise<boolean> {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("journal_session")?.value;
-  const secret = process.env.ADMIN_SESSION_SECRET;
-
-  // Dev convenience: allow the old "1" cookie value locally
-  if (process.env.NODE_ENV === "development" && session === "1") {
-    return true;
-  }
-
-  if (!secret) {
-    // No secret configured → treat as locked-down rather than wide open
-    return false;
-  }
-
-  return session === secret;
-}
 
 function normalizeSource(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
@@ -282,4 +264,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ post });
 }
-

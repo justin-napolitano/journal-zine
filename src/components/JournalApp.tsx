@@ -6,6 +6,7 @@ import type { Post } from "@/lib/db";
 import { NewPostForm } from "./NewPostForm";
 import { PostCard } from "./PostCard";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Props = {
   initialPosts: Post[];
@@ -20,6 +21,7 @@ export function JournalApp({
   isAuthed,
   initialQuery = "",
 }: Props) {
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [cursor, setCursor] = useState<number | null>(initialCursor);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -27,6 +29,7 @@ export function JournalApp({
 
   const [search, setSearch] = useState<string>(initialQuery);
   const [loadingInitial, setLoadingInitial] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -132,6 +135,18 @@ export function JournalApp({
     void reloadWithQuery(next);
   }
 
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await fetch("/api/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   return (
     <div className="main-shell">
       <div className="journal-column">
@@ -144,7 +159,26 @@ export function JournalApp({
             </div>
           </div>
 
-          {!isAuthed && (
+          {isAuthed ? (
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              disabled={loggingOut}
+              style={{
+                fontSize: "0.75rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: loggingOut ? "var(--muted)" : "var(--ink)",
+                background: "transparent",
+                border: "1px solid var(--border)",
+                borderRadius: 999,
+                padding: "0.25rem 0.8rem",
+                cursor: loggingOut ? "default" : "pointer",
+              }}
+            >
+              {loggingOut ? "logging out…" : "log out"}
+            </button>
+          ) : (
             <Link
               href="/login"
               style={{
@@ -221,4 +255,3 @@ export function JournalApp({
     </div>
   );
 }
-
