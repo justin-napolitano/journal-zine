@@ -23,11 +23,11 @@ export function NewPostForm({ onCreated }: Props) {
   const [postToBluesky, setPostToBluesky] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const maxForJournal = POST_LIMITS.journal;
-  const maxForMastodon = POST_LIMITS.mastodon;
-  const maxForBluesky = POST_LIMITS.bluesky;
+  const maxForJournal: number = POST_LIMITS.journal;
+  const maxForMastodon: number = POST_LIMITS.mastodon;
+  const maxForBluesky: number = POST_LIMITS.bluesky;
 
-  let effectiveMax = maxForJournal;
+  let effectiveMax: number = maxForJournal;
   if (postToMastodon) {
     effectiveMax = Math.min(effectiveMax, maxForMastodon);
   }
