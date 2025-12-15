@@ -55,7 +55,7 @@ function buildSnapshotBody(opts: {
 
   if (hasArtists) {
     lines.push("");
-    lines.push("artists in heavy rotation:");
+    lines.push("top artists:");
     artists.forEach((a, idx) => {
       lines.push(`${idx + 1}) ${a.name}`);
     });
@@ -63,7 +63,7 @@ function buildSnapshotBody(opts: {
 
   if (hasTracks) {
     lines.push("");
-    lines.push("tracks setting the mood:");
+    lines.push("top tracks:");
     tracks.forEach((t, idx) => {
       lines.push(`${idx + 1}) ${t.title}`);
     });

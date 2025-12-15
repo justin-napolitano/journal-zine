@@ -204,7 +204,17 @@ export async function GET(request: Request) {
           if (!payload) {
             throw new Error("Empty payload for Bluesky cross-post");
           }
-          const result = await postToBluesky(payload);
+          const result = await postToBluesky(payload, {
+            link: githubUrl
+              ? {
+                  url: githubUrl,
+                  title:
+                    pull.title?.trim() ||
+                    `${repo.full_name} PR #${pull.number}`,
+                  description: body,
+                }
+              : undefined,
+          });
 
           if (result && result.uri) {
             const updated = await sql<Post>`
