@@ -1,10 +1,10 @@
 // src/lib/text.ts
 
-export const POST_LIMITS = {
+export const POST_LIMITS: Record<"journal" | "mastodon" | "bluesky", number> = {
   journal: 1000,
   mastodon: 500,
   bluesky: 300,
-} as const;
+};
 
 let cachedSegmenter: Intl.Segmenter | null | undefined;
 
