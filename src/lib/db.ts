@@ -16,6 +16,10 @@ export type Post = {
 
   // For link-style posts
   link_url: string | null;
+
+  // Cross-post tracking
+  mastodon_url: string | null;
+  bluesky_uri: string | null;
 };
 
 export async function initDb() {
@@ -31,7 +35,9 @@ export async function initDb() {
       external_id TEXT,
       external_url TEXT,
       source_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-      link_url TEXT
+      link_url TEXT,
+      mastodon_url TEXT,
+      bluesky_uri TEXT
     );
   `;
 
@@ -94,4 +100,3 @@ export async function fetchPostsPage(
 
   return rows;
 }
-

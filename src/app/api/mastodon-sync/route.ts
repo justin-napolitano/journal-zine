@@ -103,7 +103,8 @@ async function runSync(request: Request) {
           external_id,
           external_url,
           source_deleted,
-          link_url
+          link_url,
+          mastodon_url
         )
         VALUES (
           ${kind},
@@ -114,7 +115,8 @@ async function runSync(request: Request) {
           ${st.id},
           ${st.url},
           FALSE,
-          ${linkUrl}
+          ${linkUrl},
+          ${st.url}
         )
       `;
       importedCount++;
@@ -130,6 +132,7 @@ async function runSync(request: Request) {
           body = ${body},
           image_data = ${imageUrl},
           link_url = ${linkUrl},
+          mastodon_url = ${st.url},
           source_deleted = FALSE
         WHERE id = ${row.id}
       `;
@@ -183,4 +186,3 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   return runSync(request);
 }
-

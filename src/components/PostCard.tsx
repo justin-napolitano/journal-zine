@@ -78,6 +78,7 @@ export function PostCard({ post, onTagClick }: Props) {
       <div className="post-media">
         {isPhoto && post.image_data ? (
           // PHOTO CARD
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={post.image_data} alt="" className="post-image" />
         ) : isLink && post.link_url ? (
           // LINK CARD
@@ -125,4 +126,3 @@ export function PostCard({ post, onTagClick }: Props) {
     </article>
   );
 }
-

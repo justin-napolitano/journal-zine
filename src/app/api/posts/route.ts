@@ -11,10 +11,14 @@ import { postToMastodon, uploadMediaToMastodon } from "@/lib/mastodon";
 import { postToBluesky } from "@/lib/bluesky";
 import { extractSingleUrl } from "@/lib/url";
 import { isRequestAuthed } from "@/lib/auth";
+import { getEffectivePostLimit, graphemeLength } from "@/lib/text";
 
-const MAX_FOR_JOURNAL = 1000;
-const MAX_FOR_MASTODON = 500;
-const MAX_FOR_BLUESKY = 300;
+type PostRequestPayload = {
+  body?: unknown;
+  imageData?: unknown;
+  targets?: unknown;
+};
+
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 
@@ -154,9 +158,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let data: any;
+  let data: PostRequestPayload;
   try {
-    data = await request.json();
+    data = (await request.json()) as PostRequestPayload;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
@@ -184,15 +188,12 @@ export async function POST(request: Request) {
   }
 
   // Character limits – keep everything within Bluesky if selected
-  let effectiveMax = MAX_FOR_JOURNAL;
-  if (wantsMastodon) {
-    effectiveMax = Math.min(effectiveMax, MAX_FOR_MASTODON);
-  }
-  if (wantsBluesky) {
-    effectiveMax = Math.min(effectiveMax, MAX_FOR_BLUESKY);
-  }
+  const effectiveMax = getEffectivePostLimit({
+    includeMastodon: wantsMastodon,
+    includeBluesky: wantsBluesky,
+  });
 
-  if (body.length > effectiveMax) {
+  if (graphemeLength(body) > effectiveMax) {
     return NextResponse.json(
       {
         error: `Body is too long (max ${effectiveMax} characters for selected targets)`,
@@ -241,7 +242,19 @@ export async function POST(request: Request) {
         }
       }
 
-      await postToMastodon(body, mediaIds);
+      const status = await postToMastodon(body, mediaIds);
+
+      if (status && status.url) {
+        const updated = await sql<Post>`
+          UPDATE posts
+          SET
+            mastodon_url = ${status.url},
+            external_url = COALESCE(external_url, ${status.url})
+          WHERE id = ${post.id}
+          RETURNING *
+        `;
+        post = updated.rows[0];
+      }
     } catch (err) {
       console.error(
         "Failed to cross-post to Mastodon from POST /api/posts:",
@@ -253,7 +266,18 @@ export async function POST(request: Request) {
   // Optional: cross-post to Bluesky
   if (wantsBluesky) {
     try {
-      await postToBluesky(body);
+      const bluesky = await postToBluesky(body);
+      if (bluesky && bluesky.uri) {
+        const updated = await sql<Post>`
+          UPDATE posts
+          SET
+            bluesky_uri = ${bluesky.uri},
+            external_url = COALESCE(external_url, ${bluesky.uri})
+          WHERE id = ${post.id}
+          RETURNING *
+        `;
+        post = updated.rows[0];
+      }
     } catch (err) {
       console.error(
         "Failed to cross-post to Bluesky from POST /api/posts:",

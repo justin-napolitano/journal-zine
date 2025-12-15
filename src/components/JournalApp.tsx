@@ -1,7 +1,7 @@
 // src/components/JournalApp.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Post } from "@/lib/db";
 import { NewPostForm } from "./NewPostForm";
 import { PostCard } from "./PostCard";
@@ -71,7 +71,7 @@ export function JournalApp({
     setLoadingInitial(false);
   }
 
-  async function loadMore() {
+  const loadMore = useCallback(async () => {
     if (loadingMore || reachedEnd || cursor == null) return;
 
     setLoadingMore(true);
@@ -98,7 +98,7 @@ export function JournalApp({
     } finally {
       setLoadingMore(false);
     }
-  }
+  }, [cursor, loadingMore, reachedEnd, search]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -107,7 +107,7 @@ export function JournalApp({
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry.isIntersecting && !loadingMore) {
+        if (entry.isIntersecting) {
           void loadMore();
         }
       },
@@ -116,7 +116,7 @@ export function JournalApp({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [cursor, reachedEnd, loadingMore, search]);
+  }, [loadMore, reachedEnd]);
 
   function handleCreated(post: Post) {
     setPosts((prev) => [post, ...prev]);

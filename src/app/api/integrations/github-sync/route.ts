@@ -7,9 +7,14 @@ import {
   fetchRecentMergedPullsForRepo,
 } from "@/lib/github";
 import { postToMastodon } from "@/lib/mastodon";
+import { postToBluesky } from "@/lib/bluesky";
+import { graphemeLength, POST_LIMITS } from "@/lib/text";
+import { hasBlueskyShare, hasMastodonShare } from "@/lib/crosspost";
 
 const ENABLE_MASTO =
   process.env.GITHUB_SYNC_ENABLE_MASTODON === "true";
+const ENABLE_BLUESKY =
+  process.env.GITHUB_SYNC_ENABLE_BLUESKY === "true";
 const CRON_SECRET = process.env.CRON_SECRET;
 
 // how many days back to look for merged PRs
@@ -18,11 +23,48 @@ const DEFAULT_WINDOW_DAYS = 7;
 function buildPrBody(params: {
   repoFullName: string;
   title: string;
+  number: number;
+  reserveChars?: number;
 }): string {
-  // e.g. "[journal-zine] Add unified search (tag:type:source syntax) #github #journal-zine"
-  const [owner, repo] = params.repoFullName.split("/");
-  const base = `[${repo}] ${params.title}`;
-  return `${base} #github #${repo}`;
+  const [, repoSlug] = params.repoFullName.split("/");
+  const repo = repoSlug || params.repoFullName;
+  const title = params.title.trim() || `merged pull request #${params.number}`;
+
+  const lines: string[] = [];
+  lines.push(`${repo} merge #${params.number}`);
+  lines.push("-----------------------");
+  lines.push(title);
+  lines.push("");
+  lines.push("fresh commits heading out");
+
+  let core = lines.join("\n").trimEnd();
+  const tagLine = `#github #${repo}`;
+  const tagLength = graphemeLength(tagLine);
+  const separatorLength = graphemeLength("\n\n");
+  const maxLength = Math.max(0, POST_LIMITS.bluesky - (params.reserveChars ?? 0));
+
+  if (maxLength === 0) {
+    return "";
+  }
+
+  while (
+    graphemeLength(core) + (core ? separatorLength : 0) + tagLength >
+    maxLength
+  ) {
+    const lastNewline = core.lastIndexOf("\n");
+    if (lastNewline === -1) {
+      core = "";
+      break;
+    }
+    core = core.slice(0, lastNewline).trimEnd();
+  }
+
+  if (!core) {
+    return tagLength <= maxLength ? tagLine : "";
+  }
+
+  const candidate = `${core}\n\n${tagLine}`;
+  return graphemeLength(candidate) <= maxLength ? candidate : tagLine;
 }
 
 function getSinceIso(windowDays: number): string {
@@ -76,10 +118,12 @@ export async function GET(request: Request) {
     for (const { pull } of merged) {
       const externalId = `pr:${repo.full_name}#${pull.number}`;
       const githubUrl = pull.html_url;
-      const body = buildPrBody({
+      const baseBodyInput = {
         repoFullName: repo.full_name,
         title: pull.title,
-      });
+        number: pull.number,
+      };
+      const body = buildPrBody(baseBodyInput);
 
       // dedupe by source + external_id
       const existing = await sql<Post>`
@@ -89,57 +133,102 @@ export async function GET(request: Request) {
         LIMIT 1
       `;
 
+      let post: Post;
       if (existing.rows.length > 0) {
+        post = existing.rows[0];
         skippedExisting++;
-        continue;
+      } else {
+        const { rows } = await sql<Post>`
+          INSERT INTO posts (
+            kind,
+            body,
+            image_data,
+            source,
+            external_id,
+            external_url,
+            source_deleted,
+            link_url
+          )
+          VALUES (
+            'link',
+            ${body},
+            NULL,
+            'github',
+            ${externalId},
+            NULL,
+            FALSE,
+            ${githubUrl}
+          )
+          RETURNING *
+        `;
+
+        post = rows[0];
+        inserted++;
       }
 
-      const { rows } = await sql<Post>`
-        INSERT INTO posts (
-          kind,
-          body,
-          image_data,
-          source,
-          external_id,
-          external_url,
-          source_deleted,
-          link_url
-        )
-        VALUES (
-          'link',
-          ${body},
-          NULL,
-          'github',
-          ${externalId},
-          NULL,
-          FALSE,
-          ${githubUrl}
-        )
-        RETURNING *
-      `;
-
-      let post = rows[0];
-      inserted++;
+      const alreadyMasto = hasMastodonShare(post);
+      const alreadyBluesky = hasBlueskyShare(post);
 
       // optional: cross-post this PR to Mastodon
-      if (ENABLE_MASTO) {
+      if (ENABLE_MASTO && !alreadyMasto) {
         try {
-          const status = await postToMastodon(
-            `${body} ${githubUrl}`,
-            undefined,
-          );
+          const payload = `${body} ${githubUrl ?? ""}`.trim();
+          if (payload) {
+            const status = await postToMastodon(payload, undefined);
 
-          if (status && status.url) {
+            if (status && status.url) {
+              const updated = await sql<Post>`
+                UPDATE posts
+                SET
+                  mastodon_url = ${status.url},
+                  external_url = COALESCE(external_url, ${status.url})
+                WHERE id = ${post.id}
+                RETURNING *
+              `;
+              post = updated.rows[0];
+            }
+          }
+        } catch (err) {
+          console.error("GitHub PR → Mastodon failed:", err);
+        }
+      }
+
+      if (ENABLE_BLUESKY && !alreadyBluesky) {
+        try {
+          const suffix = githubUrl ? ` ${githubUrl}` : "";
+          const reserve = suffix ? graphemeLength(suffix) : 0;
+          const blueskyBody = suffix
+            ? buildPrBody({ ...baseBodyInput, reserveChars: reserve })
+            : body;
+          const payload = `${blueskyBody}${suffix}`.trim();
+          if (!payload) {
+            throw new Error("Empty payload for Bluesky cross-post");
+          }
+          const result = await postToBluesky(payload, {
+            link: githubUrl
+              ? {
+                  url: githubUrl,
+                  title:
+                    pull.title?.trim() ||
+                    `${repo.full_name} PR #${pull.number}`,
+                  description: body,
+                }
+              : undefined,
+          });
+
+          if (result && result.uri) {
             const updated = await sql<Post>`
               UPDATE posts
-              SET external_url = ${status.url}
+              SET
+                bluesky_uri = ${result.uri},
+                external_url = COALESCE(external_url, ${result.uri})
               WHERE id = ${post.id}
               RETURNING *
             `;
             post = updated.rows[0];
           }
         } catch (err) {
-          console.error("GitHub PR → Mastodon failed:", err);
+          console.error("GitHub PR → Bluesky failed:", err);
         }
       }
     }
@@ -152,4 +241,3 @@ export async function GET(request: Request) {
     windowDays,
   });
 }
-

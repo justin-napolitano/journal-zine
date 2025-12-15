@@ -28,8 +28,26 @@ function getAgent(): BskyAgent {
   return agent;
 }
 
+type ExternalEmbed = {
+  $type: "app.bsky.embed.external";
+  external: {
+    uri: string;
+    title: string;
+    description?: string;
+  };
+};
+
+type PostToBlueskyOptions = {
+  link?: {
+    url: string;
+    title?: string;
+    description?: string;
+  };
+};
+
 export async function postToBluesky(
   text: string,
+  options?: PostToBlueskyOptions,
 ): Promise<{ uri: string; cid: string } | null> {
   if (!isConfigured()) {
     console.warn(
@@ -46,12 +64,29 @@ export async function postToBluesky(
   // login for this request
   await agent.login({ identifier, password });
 
+  let embed: ExternalEmbed | undefined;
+  if (options?.link) {
+    const title = options.link.title?.trim() || options.link.url;
+    const description = options.link.description?.trim();
+    const external: ExternalEmbed["external"] = {
+      uri: options.link.url,
+      title,
+    };
+    if (description) {
+      external.description = description;
+    }
+    embed = {
+      $type: "app.bsky.embed.external",
+      external,
+    };
+  }
+
   const res = await agent.post({
     text,
     createdAt: new Date().toISOString(),
+    embed,
   });
 
   // res has uri + cid for the post
   return { uri: res.uri, cid: res.cid };
 }
-

@@ -9,6 +9,7 @@ import {
   KeyboardEvent,
 } from "react";
 import type { Post } from "@/lib/posts";
+import { POST_LIMITS, graphemeLength } from "@/lib/text";
 
 type Props = {
   onCreated(post: Post): void;
@@ -22,11 +23,11 @@ export function NewPostForm({ onCreated }: Props) {
   const [postToBluesky, setPostToBluesky] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const maxForJournal = 1000;
-  const maxForMastodon = 500;
-  const maxForBluesky = 300;
+  const maxForJournal: number = POST_LIMITS.journal;
+  const maxForMastodon: number = POST_LIMITS.mastodon;
+  const maxForBluesky: number = POST_LIMITS.bluesky;
 
-  let effectiveMax = maxForJournal;
+  let effectiveMax: number = maxForJournal;
   if (postToMastodon) {
     effectiveMax = Math.min(effectiveMax, maxForMastodon);
   }
@@ -34,7 +35,7 @@ export function NewPostForm({ onCreated }: Props) {
     effectiveMax = Math.min(effectiveMax, maxForBluesky);
   }
 
-  const remaining = effectiveMax - body.length;
+  const remaining = effectiveMax - graphemeLength(body);
   const limitLabel = postToBluesky
     ? " (bluesky limit)"
     : postToMastodon
@@ -65,7 +66,7 @@ export function NewPostForm({ onCreated }: Props) {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = body.trim();
-    if (!trimmed || trimmed.length > effectiveMax) return;
+    if (!trimmed || graphemeLength(trimmed) > effectiveMax) return;
 
     setSubmitting(true);
     try {
@@ -103,7 +104,7 @@ export function NewPostForm({ onCreated }: Props) {
   }
 
   const disabled =
-    submitting || !body.trim() || body.length > effectiveMax;
+    submitting || !body.trim() || graphemeLength(body) > effectiveMax;
 
   return (
     <section className="composer-card">
@@ -206,4 +207,3 @@ export function NewPostForm({ onCreated }: Props) {
     </section>
   );
 }
-

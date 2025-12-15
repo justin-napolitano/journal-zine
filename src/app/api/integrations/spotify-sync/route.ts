@@ -10,12 +10,17 @@ import {
   formatTrackTitle,
 } from "@/lib/spotify";
 import { postToMastodon } from "@/lib/mastodon";
+import { postToBluesky } from "@/lib/bluesky";
+import { graphemeLength, POST_LIMITS } from "@/lib/text";
+import { hasBlueskyShare, hasMastodonShare } from "@/lib/crosspost";
 
 const ENABLE_MASTO =
   process.env.SPOTIFY_SYNC_ENABLE_MASTODON === "true";
+const ENABLE_BLUESKY =
+  process.env.SPOTIFY_SYNC_ENABLE_BLUESKY === "true";
 const CRON_SECRET = process.env.CRON_SECRET;
 
-const MAX_BODY_CHARS = 300;
+const MAX_BODY_CHARS = POST_LIMITS.bluesky;
 const TAG_LINE = "#listening #spotify #top";
 
 /**
@@ -38,31 +43,41 @@ function buildSnapshotBody(opts: {
 
   const lines: string[] = [];
 
-  lines.push(`listening snapshot (${rangeLabel}):`);
+  lines.push(`listening log - ${rangeLabel}`);
+  lines.push("-------------------------");
 
-  if (artists.length > 0) {
+  const hasArtists = artists.length > 0;
+  const hasTracks = tracks.length > 0;
+
+  if (!hasArtists && !hasTracks) {
+    lines.push("no standouts this time - rediscovering old favorites");
+  }
+
+  if (hasArtists) {
     lines.push("");
     lines.push("top artists:");
     artists.forEach((a, idx) => {
-      lines.push(`${idx + 1}. ${a.name}`);
+      lines.push(`${idx + 1}) ${a.name}`);
     });
   }
 
-  if (tracks.length > 0) {
+  if (hasTracks) {
     lines.push("");
     lines.push("top tracks:");
     tracks.forEach((t, idx) => {
-      lines.push(`${idx + 1}. ${t.title}`);
+      lines.push(`${idx + 1}) ${t.title}`);
     });
   }
 
   // First build the core body (without tags)
   let core = lines.join("\n").trimEnd();
 
+  const tagLength = graphemeLength(TAG_LINE);
+  const separatorLength = graphemeLength("\n\n");
+
   // Ensure core + tags fits in MAX_BODY_CHARS by dropping full lines
-  const sep = core ? "\n\n" : "";
   while (
-    core.length + sep.length + TAG_LINE.length >
+    graphemeLength(core) + (core ? separatorLength : 0) + tagLength >
     MAX_BODY_CHARS
   ) {
     const lastNewline = core.lastIndexOf("\n");
@@ -151,49 +166,54 @@ export async function GET(request: Request) {
     LIMIT 1
   `;
 
+  let inserted = 0;
+  let post: Post;
+
   if (existing.rows.length > 0) {
-    return NextResponse.json({
-      inserted: 0,
-      message: "snapshot already exists for today",
-    });
+    post = existing.rows[0];
+  } else {
+    const result = await sql<Post>`
+      INSERT INTO posts (
+        kind,
+        body,
+        image_data,
+        source,
+        external_id,
+        external_url,
+        source_deleted,
+        link_url
+      )
+      VALUES (
+        'text',
+        ${body},
+        NULL,
+        'spotify',
+        ${externalId},
+        NULL,
+        FALSE,
+        NULL
+      )
+      RETURNING *
+    `;
+
+    post = result.rows[0];
+    inserted = 1;
   }
 
-  // insert as a single text-style summary post
-  const { rows } = await sql<Post>`
-    INSERT INTO posts (
-      kind,
-      body,
-      image_data,
-      source,
-      external_id,
-      external_url,
-      source_deleted,
-      link_url
-    )
-    VALUES (
-      'text',
-      ${body},
-      NULL,
-      'spotify',
-      ${externalId},
-      NULL,
-      FALSE,
-      NULL
-    )
-    RETURNING *
-  `;
-
-  let post = rows[0];
+  const alreadyMasto = hasMastodonShare(post);
+  const alreadyBluesky = hasBlueskyShare(post);
 
   // optional: cross-post the same text to Mastodon
-  if (ENABLE_MASTO) {
+  if (ENABLE_MASTO && !alreadyMasto) {
     try {
       const status = await postToMastodon(body, undefined);
 
       if (status && status.url) {
         const updated = await sql<Post>`
           UPDATE posts
-          SET external_url = ${status.url}
+          SET
+            mastodon_url = ${status.url},
+            external_url = COALESCE(external_url, ${status.url})
           WHERE id = ${post.id}
           RETURNING *
         `;
@@ -207,12 +227,36 @@ export async function GET(request: Request) {
     }
   }
 
+  // optional: cross-post to Bluesky
+  if (ENABLE_BLUESKY && !alreadyBluesky) {
+    try {
+      const blueskyPost = await postToBluesky(body);
+      if (blueskyPost && blueskyPost.uri) {
+        const updated = await sql<Post>`
+          UPDATE posts
+          SET
+            bluesky_uri = ${blueskyPost.uri},
+            external_url = COALESCE(external_url, ${blueskyPost.uri})
+          WHERE id = ${post.id}
+          RETURNING *
+        `;
+        post = updated.rows[0];
+      }
+    } catch (err) {
+      console.error(
+        "Spotify top → Bluesky cross-post failed:",
+        err,
+      );
+    }
+  }
+
   return NextResponse.json({
-    inserted: 1,
+    inserted,
     timeRange,
     artistsCount: topArtists.length,
     tracksCount: topTracks.length,
     bodyLength: body.length,
+    message:
+      inserted === 0 ? "snapshot already exists for today" : undefined,
   });
 }
-
