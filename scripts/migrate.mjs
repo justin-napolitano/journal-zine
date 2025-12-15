@@ -72,6 +72,16 @@ const migrations = [
       `;
     },
   },
+  {
+    name: "004_add_crosspost_targets",
+    up: async () => {
+      await sql`
+        ALTER TABLE posts
+        ADD COLUMN IF NOT EXISTS mastodon_url TEXT,
+        ADD COLUMN IF NOT EXISTS bluesky_uri TEXT
+      `;
+    },
+  },
   // When you add more migrations later, push new objects here:
   // {
   //   name: "002_some_other_change",
@@ -122,4 +132,3 @@ async function runMigrations() {
 runMigrations().then(() => {
   // let process exit naturally
 });
-

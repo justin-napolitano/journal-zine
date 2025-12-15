@@ -11,6 +11,7 @@ import {
 import { postToMastodon } from "@/lib/mastodon";
 import { postToBluesky } from "@/lib/bluesky";
 import { graphemeLength, POST_LIMITS } from "@/lib/text";
+import { hasBlueskyShare, hasMastodonShare } from "@/lib/crosspost";
 
 const ENABLE_MASTO =
   process.env.GITHUB_SYNC_ENABLE_MASTODON === "true";
@@ -166,49 +167,53 @@ export async function GET(request: Request) {
     LIMIT 1
   `;
 
+  let inserted = 0;
+  let post: Post;
+
   if (existing.rows.length > 0) {
-    return NextResponse.json({
-      inserted: 0,
-      repos: repos.length,
-      merged: totalMerged,
-      message: "weekly snapshot already exists for today",
-    });
+    post = existing.rows[0];
+  } else {
+    const result = await sql<Post>`
+      INSERT INTO posts (
+        kind,
+        body,
+        image_data,
+        source,
+        external_id,
+        external_url,
+        source_deleted,
+        link_url
+      )
+      VALUES (
+        'text',
+        ${body},
+        NULL,
+        'github',
+        ${externalId},
+        NULL,
+        FALSE,
+        NULL
+      )
+      RETURNING *
+    `;
+
+    post = result.rows[0];
+    inserted = 1;
   }
 
-  const { rows } = await sql<Post>`
-    INSERT INTO posts (
-      kind,
-      body,
-      image_data,
-      source,
-      external_id,
-      external_url,
-      source_deleted,
-      link_url
-    )
-    VALUES (
-      'text',
-      ${body},
-      NULL,
-      'github',
-      ${externalId},
-      NULL,
-      FALSE,
-      NULL
-    )
-    RETURNING *
-  `;
+  const alreadyMasto = hasMastodonShare(post);
+  const alreadyBluesky = hasBlueskyShare(post);
 
-  let post = rows[0];
-
-  if (ENABLE_MASTO) {
+  if (ENABLE_MASTO && !alreadyMasto) {
     try {
       const status = await postToMastodon(body, undefined);
 
-      if (status && status.url && !post.external_url) {
+      if (status && status.url) {
         const updated = await sql<Post>`
           UPDATE posts
-          SET external_url = ${status.url}
+          SET
+            mastodon_url = ${status.url},
+            external_url = COALESCE(external_url, ${status.url})
           WHERE id = ${post.id}
           RETURNING *
         `;
@@ -222,13 +227,15 @@ export async function GET(request: Request) {
     }
   }
 
-  if (ENABLE_BLUESKY) {
+  if (ENABLE_BLUESKY && !alreadyBluesky) {
     try {
       const blueskyPost = await postToBluesky(body);
-      if (blueskyPost && blueskyPost.uri && !post.external_url) {
+      if (blueskyPost && blueskyPost.uri) {
         const updated = await sql<Post>`
           UPDATE posts
-          SET external_url = ${blueskyPost.uri}
+          SET
+            bluesky_uri = ${blueskyPost.uri},
+            external_url = COALESCE(external_url, ${blueskyPost.uri})
           WHERE id = ${post.id}
           RETURNING *
         `;
@@ -243,9 +250,11 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({
-    inserted: 1,
+    inserted,
     repos: repos.length,
     merged: totalMerged,
     bodyLength: body.length,
+    message:
+      inserted === 0 ? "weekly snapshot already exists for today" : undefined,
   });
 }

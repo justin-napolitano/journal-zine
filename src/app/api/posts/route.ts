@@ -236,7 +236,19 @@ export async function POST(request: Request) {
         }
       }
 
-      await postToMastodon(body, mediaIds);
+      const status = await postToMastodon(body, mediaIds);
+
+      if (status && status.url) {
+        const updated = await sql<Post>`
+          UPDATE posts
+          SET
+            mastodon_url = ${status.url},
+            external_url = COALESCE(external_url, ${status.url})
+          WHERE id = ${post.id}
+          RETURNING *
+        `;
+        post = updated.rows[0];
+      }
     } catch (err) {
       console.error(
         "Failed to cross-post to Mastodon from POST /api/posts:",
@@ -248,7 +260,18 @@ export async function POST(request: Request) {
   // Optional: cross-post to Bluesky
   if (wantsBluesky) {
     try {
-      await postToBluesky(body);
+      const bluesky = await postToBluesky(body);
+      if (bluesky && bluesky.uri) {
+        const updated = await sql<Post>`
+          UPDATE posts
+          SET
+            bluesky_uri = ${bluesky.uri},
+            external_url = COALESCE(external_url, ${bluesky.uri})
+          WHERE id = ${post.id}
+          RETURNING *
+        `;
+        post = updated.rows[0];
+      }
     } catch (err) {
       console.error(
         "Failed to cross-post to Bluesky from POST /api/posts:",

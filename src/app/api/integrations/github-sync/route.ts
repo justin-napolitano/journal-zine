@@ -9,6 +9,7 @@ import {
 import { postToMastodon } from "@/lib/mastodon";
 import { postToBluesky } from "@/lib/bluesky";
 import { graphemeLength, POST_LIMITS } from "@/lib/text";
+import { hasBlueskyShare, hasMastodonShare } from "@/lib/crosspost";
 
 const ENABLE_MASTO =
   process.env.GITHUB_SYNC_ENABLE_MASTODON === "true";
@@ -132,61 +133,67 @@ export async function GET(request: Request) {
         LIMIT 1
       `;
 
+      let post: Post;
       if (existing.rows.length > 0) {
+        post = existing.rows[0];
         skippedExisting++;
-        continue;
+      } else {
+        const { rows } = await sql<Post>`
+          INSERT INTO posts (
+            kind,
+            body,
+            image_data,
+            source,
+            external_id,
+            external_url,
+            source_deleted,
+            link_url
+          )
+          VALUES (
+            'link',
+            ${body},
+            NULL,
+            'github',
+            ${externalId},
+            NULL,
+            FALSE,
+            ${githubUrl}
+          )
+          RETURNING *
+        `;
+
+        post = rows[0];
+        inserted++;
       }
 
-      const { rows } = await sql<Post>`
-        INSERT INTO posts (
-          kind,
-          body,
-          image_data,
-          source,
-          external_id,
-          external_url,
-          source_deleted,
-          link_url
-        )
-        VALUES (
-          'link',
-          ${body},
-          NULL,
-          'github',
-          ${externalId},
-          NULL,
-          FALSE,
-          ${githubUrl}
-        )
-        RETURNING *
-      `;
-
-      let post = rows[0];
-      inserted++;
+      const alreadyMasto = hasMastodonShare(post);
+      const alreadyBluesky = hasBlueskyShare(post);
 
       // optional: cross-post this PR to Mastodon
-      if (ENABLE_MASTO) {
+      if (ENABLE_MASTO && !alreadyMasto) {
         try {
-          const status = await postToMastodon(
-            `${body} ${githubUrl}`,
-            undefined,
-          );
+          const payload = `${body} ${githubUrl ?? ""}`.trim();
+          if (payload) {
+            const status = await postToMastodon(payload, undefined);
 
-          if (status && status.url && !post.external_url) {
-            const updated = await sql<Post>`
-              UPDATE posts
-              SET external_url = ${status.url}
-              WHERE id = ${post.id}
-              RETURNING *
-            `;
-            post = updated.rows[0];
+            if (status && status.url) {
+              const updated = await sql<Post>`
+                UPDATE posts
+                SET
+                  mastodon_url = ${status.url},
+                  external_url = COALESCE(external_url, ${status.url})
+                WHERE id = ${post.id}
+                RETURNING *
+              `;
+              post = updated.rows[0];
+            }
           }
         } catch (err) {
           console.error("GitHub PR → Mastodon failed:", err);
         }
       }
 
-      if (ENABLE_BLUESKY) {
+      if (ENABLE_BLUESKY && !alreadyBluesky) {
         try {
           const suffix = githubUrl ? ` ${githubUrl}` : "";
           const reserve = suffix ? graphemeLength(suffix) : 0;
@@ -199,10 +206,12 @@ export async function GET(request: Request) {
           }
           const result = await postToBluesky(payload);
 
-          if (result && result.uri && !post.external_url) {
+          if (result && result.uri) {
             const updated = await sql<Post>`
               UPDATE posts
-              SET external_url = ${result.uri}
+              SET
+                bluesky_uri = ${result.uri},
+                external_url = COALESCE(external_url, ${result.uri})
               WHERE id = ${post.id}
               RETURNING *
             `;
