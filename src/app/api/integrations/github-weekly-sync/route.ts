@@ -9,12 +9,16 @@ import {
   fetchRecentMergedPullsForRepo,
 } from "@/lib/github";
 import { postToMastodon } from "@/lib/mastodon";
+import { postToBluesky } from "@/lib/bluesky";
+import { graphemeLength, POST_LIMITS } from "@/lib/text";
 
 const ENABLE_MASTO =
   process.env.GITHUB_SYNC_ENABLE_MASTODON === "true";
+const ENABLE_BLUESKY =
+  process.env.GITHUB_SYNC_ENABLE_BLUESKY === "true";
 const CRON_SECRET = process.env.CRON_SECRET;
 
-const MAX_BODY_CHARS = 300;
+const MAX_BODY_CHARS = POST_LIMITS.bluesky;
 const TAG_LINE = "#github #weekly";
 
 const DEFAULT_WINDOW_DAYS = 7;
@@ -36,28 +40,35 @@ function buildWeeklyGithubBody(opts: {
   const { windowDays, repoStats } = opts;
 
   const lines: string[] = [];
-  lines.push(`github activity (last ${windowDays} days):`);
+  lines.push(`github pulse - last ${windowDays} days`);
+  lines.push("---------------------------");
 
   const totalMerged = repoStats.reduce(
     (sum, r) => sum + r.mergedCount,
     0,
   );
-  lines.push(`- ${totalMerged} merged PRs total`);
+  lines.push(`${totalMerged} merged pull requests across the board`);
 
   const activeRepos = repoStats.filter((r) => r.mergedCount > 0);
   if (activeRepos.length > 0) {
     lines.push("");
-    lines.push("by repo:");
+    lines.push("shipping highlights:");
     activeRepos.forEach((r) => {
-      lines.push(`- ${r.repo}: ${r.mergedCount} merged PRs`);
+      lines.push(`- ${r.repo}: ${r.mergedCount} merge${
+        r.mergedCount === 1 ? "" : "s"
+      }`);
     });
+  } else {
+    lines.push("");
+    lines.push("quiet stretch - clearing the runway for the next sprint");
   }
 
   let core = lines.join("\n").trimEnd();
-  const sep = core ? "\n\n" : "";
+  const tagLength = graphemeLength(TAG_LINE);
+  const separatorLength = graphemeLength("\n\n");
 
   while (
-    core.length + sep.length + TAG_LINE.length >
+    graphemeLength(core) + (core ? separatorLength : 0) + tagLength >
     MAX_BODY_CHARS
   ) {
     const lastNewline = core.lastIndexOf("\n");
@@ -194,7 +205,7 @@ export async function GET(request: Request) {
     try {
       const status = await postToMastodon(body, undefined);
 
-      if (status && status.url) {
+      if (status && status.url && !post.external_url) {
         const updated = await sql<Post>`
           UPDATE posts
           SET external_url = ${status.url}
@@ -211,6 +222,26 @@ export async function GET(request: Request) {
     }
   }
 
+  if (ENABLE_BLUESKY) {
+    try {
+      const blueskyPost = await postToBluesky(body);
+      if (blueskyPost && blueskyPost.uri && !post.external_url) {
+        const updated = await sql<Post>`
+          UPDATE posts
+          SET external_url = ${blueskyPost.uri}
+          WHERE id = ${post.id}
+          RETURNING *
+        `;
+        post = updated.rows[0];
+      }
+    } catch (err) {
+      console.error(
+        "GitHub weekly → Bluesky cross-post failed:",
+        err,
+      );
+    }
+  }
+
   return NextResponse.json({
     inserted: 1,
     repos: repos.length,
@@ -218,4 +249,3 @@ export async function GET(request: Request) {
     bodyLength: body.length,
   });
 }
-

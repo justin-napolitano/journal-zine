@@ -11,10 +11,8 @@ import { postToMastodon, uploadMediaToMastodon } from "@/lib/mastodon";
 import { postToBluesky } from "@/lib/bluesky";
 import { extractSingleUrl } from "@/lib/url";
 import { isRequestAuthed } from "@/lib/auth";
+import { getEffectivePostLimit, graphemeLength } from "@/lib/text";
 
-const MAX_FOR_JOURNAL = 1000;
-const MAX_FOR_MASTODON = 500;
-const MAX_FOR_BLUESKY = 300;
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 
@@ -184,15 +182,12 @@ export async function POST(request: Request) {
   }
 
   // Character limits – keep everything within Bluesky if selected
-  let effectiveMax = MAX_FOR_JOURNAL;
-  if (wantsMastodon) {
-    effectiveMax = Math.min(effectiveMax, MAX_FOR_MASTODON);
-  }
-  if (wantsBluesky) {
-    effectiveMax = Math.min(effectiveMax, MAX_FOR_BLUESKY);
-  }
+  const effectiveMax = getEffectivePostLimit({
+    includeMastodon: wantsMastodon,
+    includeBluesky: wantsBluesky,
+  });
 
-  if (body.length > effectiveMax) {
+  if (graphemeLength(body) > effectiveMax) {
     return NextResponse.json(
       {
         error: `Body is too long (max ${effectiveMax} characters for selected targets)`,
