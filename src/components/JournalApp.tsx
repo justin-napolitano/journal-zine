@@ -37,6 +37,7 @@ export function JournalApp({
   const secretBuffer = useRef<string[]>([]);
 
   const { masthead, quickFilters, search: searchContent } = journalContent;
+  const showMasthead = false;
 
   function buildQuery(q: string, cursorOverride: number | null = null): string {
     const params = new URLSearchParams();
@@ -189,36 +190,38 @@ export function JournalApp({
   return (
     <div className="main-shell">
       <div className="journal-column">
-        <header className="masthead">
-          {masthead.eyebrow && (
-            <p className="masthead__eyebrow">{masthead.eyebrow}</p>
-          )}
-          <h1>{masthead.title}</h1>
-          {masthead.subhead && (
-            <p className="masthead__subhead">{masthead.subhead}</p>
-          )}
-          {masthead.note && (
-            <p className="masthead__note">{masthead.note}</p>
-          )}
-          {showLoginHint && (
-            <div className="masthead__actions">
-              {isAuthed ? (
-                <button
-                  type="button"
-                  className="cta ghost"
-                  onClick={() => void handleLogout()}
-                  disabled={loggingOut}
-                >
-                  {loggingOut ? "logging out…" : "log out"}
-                </button>
-              ) : (
-                <Link className="cta ghost" href="/login">
-                  editor login
-                </Link>
-              )}
-            </div>
-          )}
-        </header>
+        {showMasthead && (
+          <header className="masthead">
+            {masthead.eyebrow && (
+              <p className="masthead__eyebrow">{masthead.eyebrow}</p>
+            )}
+            <h1>{masthead.title}</h1>
+            {masthead.subhead && (
+              <p className="masthead__subhead">{masthead.subhead}</p>
+            )}
+            {masthead.note && (
+              <p className="masthead__note">{masthead.note}</p>
+            )}
+            {showLoginHint && (
+              <div className="masthead__actions">
+                {isAuthed ? (
+                  <button
+                    type="button"
+                    className="cta ghost"
+                    onClick={() => void handleLogout()}
+                    disabled={loggingOut}
+                  >
+                    {loggingOut ? "logging out…" : "log out"}
+                  </button>
+                ) : (
+                  <Link className="cta ghost" href="/login">
+                    editor login
+                  </Link>
+                )}
+              </div>
+            )}
+          </header>
+        )}
 
         {/* Single search bar */}
         <div className="journal-search">

@@ -50,11 +50,6 @@ function renderHashtags(
   });
 }
 
-function getSourceLabel(source: Post["source"]) {
-  if (source === "local") return "journal";
-  return source;
-}
-
 function getHost(url: string | null | undefined) {
   if (!url) return null;
   try {
@@ -64,6 +59,7 @@ function getHost(url: string | null | undefined) {
     return null;
   }
 }
+
 
 export function PostCard({ post, onTagClick }: Props) {
   const isPhoto = post.kind === "photo";
@@ -111,9 +107,6 @@ export function PostCard({ post, onTagClick }: Props) {
 
       <div className="post-meta">
         <span>{formatDate(post.created_at)}</span>
-        <span className="post-source-badge">
-          {getSourceLabel(post.source)}
-        </span>
         {post.external_url && (
           <>
             <span>·</span>
