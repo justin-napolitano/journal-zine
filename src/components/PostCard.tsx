@@ -50,11 +50,6 @@ function renderHashtags(
   });
 }
 
-function getSourceLabel(source: Post["source"]) {
-  if (source === "local") return "journal";
-  return source;
-}
-
 function getHost(url: string | null | undefined) {
   if (!url) return null;
   try {
@@ -65,6 +60,7 @@ function getHost(url: string | null | undefined) {
   }
 }
 
+
 export function PostCard({ post, onTagClick }: Props) {
   const isPhoto = post.kind === "photo";
   const isLink = post.kind === "link";
@@ -73,8 +69,12 @@ export function PostCard({ post, onTagClick }: Props) {
   const primaryLink = post.link_url || post.external_url || null;
   const hostForLink = getHost(primaryLink);
 
+  const cardClassNames = ["post-card"];
+  if (isPhoto) cardClassNames.push("post-card--photo");
+  if (isLink) cardClassNames.push("post-card--link");
+
   return (
-    <article className="post-card">
+    <article className={cardClassNames.join(" ")}>
       <div className="post-media">
         {isPhoto && post.image_data ? (
           // PHOTO CARD
@@ -107,9 +107,6 @@ export function PostCard({ post, onTagClick }: Props) {
 
       <div className="post-meta">
         <span>{formatDate(post.created_at)}</span>
-        <span className="post-source-badge">
-          {getSourceLabel(post.source)}
-        </span>
         {post.external_url && (
           <>
             <span>·</span>

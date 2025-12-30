@@ -7,6 +7,7 @@ import { NewPostForm } from "./NewPostForm";
 import { PostCard } from "./PostCard";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { journalContent } from "@/data/journal-content";
 
 type Props = {
   initialPosts: Post[];
@@ -30,8 +31,13 @@ export function JournalApp({
   const [search, setSearch] = useState<string>(initialQuery);
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showLoginHint, setShowLoginHint] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const secretBuffer = useRef<string[]>([]);
+
+  const { masthead, quickFilters, search: searchContent } = journalContent;
+  const showMasthead = false;
 
   function buildQuery(q: string, cursorOverride: number | null = null): string {
     const params = new URLSearchParams();
@@ -43,6 +49,11 @@ export function JournalApp({
     }
     const qs = params.toString();
     return qs ? `?${qs}` : "";
+  }
+
+  function handleFilterClick(query: string) {
+    setSearch(query);
+    void reloadWithQuery(query);
   }
 
   async function reloadWithQuery(nextQ: string) {
@@ -118,6 +129,32 @@ export function JournalApp({
     return () => observer.disconnect();
   }, [loadMore, reachedEnd]);
 
+  useEffect(() => {
+    const secretCode = ["f", "i", "e", "l", "d", "n", "o", "t", "e"];
+
+    function handleKeydown(event: KeyboardEvent) {
+      const key = event.key.toLowerCase();
+      if (key.length !== 1) return;
+
+      secretBuffer.current.push(key);
+      if (secretBuffer.current.length > secretCode.length) {
+        secretBuffer.current.shift();
+      }
+
+      const matches = secretCode.every(
+        (codeKey, index) => secretBuffer.current[index] === codeKey,
+      );
+
+      if (matches) {
+        setShowLoginHint(true);
+        window.setTimeout(() => setShowLoginHint(false), 6000);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, []);
+
   function handleCreated(post: Post) {
     setPosts((prev) => [post, ...prev]);
   }
@@ -147,51 +184,44 @@ export function JournalApp({
     }
   }
 
+  const searchPlaceholder = searchContent.placeholder;
+  const searchHint = searchContent.hint;
+
   return (
     <div className="main-shell">
       <div className="journal-column">
-        {/* Header */}
-        <div className="page-head">
-          <div>
-            <div className="site-heading">journal</div>
-            <div className="site-subtitle">
-              an ongoing stream of photos &amp; fragments
-            </div>
-          </div>
-
-          {isAuthed ? (
-            <button
-              type="button"
-              onClick={() => void handleLogout()}
-              disabled={loggingOut}
-              style={{
-                fontSize: "0.75rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: loggingOut ? "var(--muted)" : "var(--ink)",
-                background: "transparent",
-                border: "1px solid var(--border)",
-                borderRadius: 999,
-                padding: "0.25rem 0.8rem",
-                cursor: loggingOut ? "default" : "pointer",
-              }}
-            >
-              {loggingOut ? "logging out…" : "log out"}
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              style={{
-                fontSize: "0.75rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: "var(--muted)",
-              }}
-            >
-              log in
-            </Link>
-          )}
-        </div>
+        {showMasthead && (
+          <header className="masthead">
+            {masthead.eyebrow && (
+              <p className="masthead__eyebrow">{masthead.eyebrow}</p>
+            )}
+            <h1>{masthead.title}</h1>
+            {masthead.subhead && (
+              <p className="masthead__subhead">{masthead.subhead}</p>
+            )}
+            {masthead.note && (
+              <p className="masthead__note">{masthead.note}</p>
+            )}
+            {showLoginHint && (
+              <div className="masthead__actions">
+                {isAuthed ? (
+                  <button
+                    type="button"
+                    className="cta ghost"
+                    onClick={() => void handleLogout()}
+                    disabled={loggingOut}
+                  >
+                    {loggingOut ? "logging out…" : "log out"}
+                  </button>
+                ) : (
+                  <Link className="cta ghost" href="/login">
+                    editor login
+                  </Link>
+                )}
+              </div>
+            )}
+          </header>
+        )}
 
         {/* Single search bar */}
         <div className="journal-search">
@@ -203,7 +233,7 @@ export function JournalApp({
               <input
                 className="journal-search-input"
                 type="text"
-                placeholder='search… (try "tag:journal", "type:photos", "source:mastodon")'
+                placeholder={searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -215,12 +245,24 @@ export function JournalApp({
                 {loadingInitial ? "…" : "Search"}
               </button>
             </div>
-            <p className="journal-search-hint">
-              supports{" "}
-              <code>tag:foo</code>, <code>:tag foo</code>,{" "}
-              <code>type:notes</code>, <code>source:mastodon</code>
-            </p>
+            {searchHint && (
+              <p className="journal-search-hint">{searchHint}</p>
+            )}
           </form>
+          {quickFilters.length > 0 && (
+            <div className="quick-filters">
+              {quickFilters.map((filter) => (
+                <button
+                  key={filter.label}
+                  type="button"
+                  className="chip"
+                  onClick={() => handleFilterClick(filter.query)}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Composer */}
