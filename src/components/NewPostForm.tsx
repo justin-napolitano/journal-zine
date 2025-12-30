@@ -134,31 +134,11 @@ export function NewPostForm({ onCreated }: Props) {
             )}
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.25rem",
-              alignItems: "flex-end",
-            }}
-          >
+          <div className="composer-controls">
             {/* Target selection */}
-            <div
-              style={{
-                display: "flex",
-                gap: "0.75rem",
-                alignItems: "center",
-              }}
-            >
+            <div className="composer-targets">
               <span className="composer-meta">post to:</span>
-              <label
-                style={{
-                  display: "flex",
-                  gap: "0.25rem",
-                  alignItems: "center",
-                  fontSize: "0.8rem",
-                }}
-              >
+              <label>
                 <input
                   type="checkbox"
                   checked={postToMastodon}
@@ -166,14 +146,7 @@ export function NewPostForm({ onCreated }: Props) {
                 />
                 mastodon
               </label>
-              <label
-                style={{
-                  display: "flex",
-                  gap: "0.25rem",
-                  alignItems: "center",
-                  fontSize: "0.8rem",
-                }}
-              >
+              <label>
                 <input
                   type="checkbox"
                   checked={postToBluesky}
@@ -183,13 +156,7 @@ export function NewPostForm({ onCreated }: Props) {
               </label>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-              }}
-            >
+            <div className="composer-actions">
               <span className="composer-meta">
                 {remaining} characters left{limitLabel}
               </span>

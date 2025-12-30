@@ -73,8 +73,12 @@ export function PostCard({ post, onTagClick }: Props) {
   const primaryLink = post.link_url || post.external_url || null;
   const hostForLink = getHost(primaryLink);
 
+  const cardClassNames = ["post-card"];
+  if (isPhoto) cardClassNames.push("post-card--photo");
+  if (isLink) cardClassNames.push("post-card--link");
+
   return (
-    <article className="post-card">
+    <article className={cardClassNames.join(" ")}>
       <div className="post-media">
         {isPhoto && post.image_data ? (
           // PHOTO CARD
