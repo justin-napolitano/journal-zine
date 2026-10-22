@@ -43,3 +43,7 @@ npm run build -- --webpack: passed on Next16.4.1. Configured DB readiness is rea
 ## Follow-up polish
 
 P3: native browser-UI zoom can be checked manually beyond the recorded effective200% reflow. No further cosmetic expansion is required for this rollout.
+
+## Timestamp hydration follow-up
+
+Production-only timezone drift found after rollout: metadata locale/timezone varied between SSR and clients (React418). Fixed by using shared explicit en-US/UTC labels. Actual UTC-server production build versus New York, Tokyo and Berlin browser contexts now has identical labels and zero hydration/console errors.390px captures remain within viewport. The same modest type/layout is preserved; UTC is now truthfully visible. See `brand-rollout/hydration-followup.md` and `brand-rollout/qa/hydration/`. Scoped final result remains passed; production verification follows deployment of this separate PR.

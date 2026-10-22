@@ -91,3 +91,7 @@ Keep iterating on this file whenever you add a new cron job, script, or deployme
 ## 2026-10-22 supported Next prerequisite
 
 Bounded same-major Next16.4.1/React19.2.9 update preserves phaseAauth/invite/session behavior and reactCompiler config. See next-16-stable-prerequisite.md for exact sources, build/auth evidence, remaining baseline transitive advisories and local Turbopack OS restriction. No migration or public account writes.
+
+## 2026-10-22: public timestamp hydration
+
+Host-default `toLocaleString` caused React418 between Vercel UTC SSR and visitor locale/timezone. Public post metadata now uses shared en-US/UTC formatting with a visible UTC suffix. Persisted instants and integration timestamps are unchanged. Test with `node --test scripts/test-post-date.mjs`; browser evidence is under `brand-rollout/qa/hydration`. No dependency, auth, data or schema changes.

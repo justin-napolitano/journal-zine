@@ -32,12 +32,14 @@ export function isLocalOnly(post: Post): boolean {
 }
 
 /**
- * Shared date formatter, matching what you already did
- * in PostCard.
+ * Stable public timestamp for server rendering and browser hydration.
+ * UTC is explicit so host timezone/locale cannot change the rendered text.
  */
 export function formatPostDate(input: string | Date): string {
   const d = typeof input === "string" ? new Date(input) : input;
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString("en-US", {
+    timeZone: "UTC",
+    timeZoneName: "short",
     year: "numeric",
     month: "short",
     day: "numeric",

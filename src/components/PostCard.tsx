@@ -2,22 +2,12 @@
 
 import React from "react";
 import type { Post } from "@/lib/db";
+import { formatPostDate } from "@/lib/posts";
 
 type Props = {
   post: Post;
   onTagClick?(tag: string): void;
 };
-
-function formatDate(iso: string | Date) {
-  const d = typeof iso === "string" ? new Date(iso) : iso;
-  return d.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 // Turn #tags into clickable pills that call onTagClick
 function renderHashtags(
@@ -106,7 +96,7 @@ export function PostCard({ post, onTagClick }: Props) {
       </div>
 
       <div className="post-meta">
-        <span>{formatDate(post.created_at)}</span>
+        <span>{formatPostDate(post.created_at)}</span>
         {post.external_url && (
           <>
             <span>·</span>
