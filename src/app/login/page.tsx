@@ -46,6 +46,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} style={{ maxWidth: 360 }}>
         <label
+          htmlFor="admin-password"
           style={{
             display: "block",
             fontSize: "0.85rem",
@@ -55,6 +56,7 @@ export default function LoginPage() {
           Password
         </label>
         <input
+          id="admin-password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

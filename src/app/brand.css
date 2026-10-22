@@ -71,3 +71,9 @@ input, button, textarea, select { font-family: inherit; }
 .masthead__note { background: transparent; transform: none; box-shadow: none; padding: 0; font-size: 14px; color: var(--ink-soft); }
 .chip:nth-of-type(n) { background: transparent; transform: none; }
 .post-card:hover { transform: none; box-shadow: none; }
+
+/* Browser QA: visible text-only identity and no nested frame around feed text. */
+.journal-brand-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.journal-brand-header h1 { margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 22px; line-height: 1.4; font-weight: 600; }
+.journal-brand-header a, .journal-brand-header button { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); background: transparent; border: 0; font-size: 15px; text-decoration: none; }
+.post-card .post-media, .post-card:not(.post-card--photo) .post-media-text { border: 0; padding: 0; border-radius: 0; background: transparent; }
