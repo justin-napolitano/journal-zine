@@ -190,6 +190,16 @@ export function JournalApp({
   return (
     <div className="main-shell">
       <div className="journal-column">
+        <header className="journal-brand-header">
+          <h1>Studio Journal</h1>
+          <nav aria-label="Journal">
+            {isAuthed ? (
+              <button type="button" onClick={() => void handleLogout()} disabled={loggingOut}>
+                {loggingOut ? "Logging out…" : "Log out"}
+              </button>
+            ) : <Link href="/login">Editor</Link>}
+          </nav>
+        </header>
         {showMasthead && (
           <header className="masthead">
             {masthead.eyebrow && (
@@ -232,6 +242,7 @@ export function JournalApp({
             <div className="journal-search-row">
               <input
                 className="journal-search-input"
+                aria-label="Search journal entries"
                 type="text"
                 placeholder={searchPlaceholder}
                 value={search}

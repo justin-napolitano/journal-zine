@@ -1,0 +1,79 @@
+@font-face { font-family: Inter; src: url("/fonts/Inter-Variable.ttf") format("truetype"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Source Serif 4"; src: url("/fonts/SourceSerif4-Variable.ttf") format("truetype"); font-weight: 200 900; font-style: normal; font-display: swap; }
+/* Approved Index / Simplified direction. No remote font request is required. */
+:root {
+  --bg: #f4f0e8;
+  --upper-bg: #f4f0e8;
+  --ink: #25251f;
+  --ink-soft: #5b5b55;
+  --ink-mute: #62625c;
+  --accent: #53657a;
+  --accent-soft: #e7e4dd;
+  --line: #cbc8bf;
+  --border: #cbc8bf;
+  --border-strong: #9b988f;
+  --line-strong: #9b988f;
+  --shadow: none;
+  --radius: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+body { font-size: 16px; line-height: 1.65; }
+body::after, body::before, .masthead::after, .masthead__note::after, .post-card::after { display: none; }
+main, .main-shell { width: min(880px, calc(100% - 48px)); max-width: 880px; padding: 36px 0 64px; }
+h1, h2, h3, .entry-title { font-family: "Source Serif 4", Georgia, serif; font-weight: 400; letter-spacing: -.02em; font-variation-settings: normal; overflow-wrap: anywhere; }
+h1, .entry-title { font-size: 28px; line-height: 1.3; }
+h2 { font-size: 24px; line-height: 1.4; }
+h3 { font-size: 20px; line-height: 1.4; }
+.masthead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding: 0 0 24px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; background: transparent; }
+.masthead h1 { font-family: inherit; font-size: 22px; font-weight: 600; line-height: 1.4; margin: 0; letter-spacing: -.025em; }
+.masthead__subhead { font-size: 15px; margin: 4px 0 0; color: var(--ink-soft); }
+.journal-page { gap: 24px; }
+.journal-search { margin-top: 24px; padding: 0 0 24px; border: 0; border-bottom: 1px solid var(--line); background: transparent; border-radius: 0; box-shadow: none; gap: 12px; }
+.journal-search-row { border-radius: 2px; box-shadow: none; min-width: 0; }
+.journal-search-input { min-width: 0; width: 100%; font-size: 16px; border-radius: 0; padding: 10px 12px; }
+.journal-search-button { border-radius: 2px; padding: 10px 16px; letter-spacing: normal; text-transform: none; font-weight: 500; font-size: 15px; min-height: 44px; }
+.journal-search-button:hover:not(:disabled), .journal-search-button:focus-visible { letter-spacing: normal; transform: none; }
+.chip { background: transparent; border-radius: 2px; border-color: var(--line); color: var(--ink); text-transform: none; letter-spacing: normal; font-size: 14px; min-height: 44px; }
+.post-card { border-radius: 0; box-shadow: none; border: 0; border-bottom: 1px solid var(--line); background: transparent; padding: 24px 0; overflow-wrap: anywhere; }
+.post-media-text { padding: 0; border: 0; border-radius: 0; background: transparent; }
+.post-title { font-family: "Source Serif 4", Georgia, serif; }
+.feed { gap: 0; }
+.post-card h2, .post-card h3 { font-size: 22px; }
+.cta { text-transform: none; letter-spacing: normal; border-radius: 2px; min-height: 44px; }
+.cta:hover, .cta:focus-visible { letter-spacing: normal; }
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.entry-page { width: min(76ch, calc(100% - 48px)); margin: 0 auto; padding: 36px 0 64px; }
+.entry-header { padding-bottom: 20px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+.entry-body { line-height: 1.75; overflow-wrap: anywhere; }
+.entry-body img { height: auto; max-width: 100%; }
+.entry-body pre { max-width: 100%; overflow: auto; padding: 16px; border: 1px solid var(--line); }
+.entry-body table { display: block; max-width: 100%; overflow: auto; border-collapse: collapse; }
+.entry-body th, .entry-body td { padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.entry-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.vim-shell { min-width: 0; }
+.vim-shell-main { min-width: 0; }
+.filter-bar, .command-bar, .command-bar-mobile, .statusline { padding: 12px 24px; border-bottom: 1px solid var(--line); font-size: 14px; overflow-wrap: anywhere; }
+.filter-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.filter-pill { color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 2px; min-height: 44px; padding: 8px 12px; }
+.filter-pill-active { background: var(--accent-soft); border-color: var(--accent); }
+input, button, textarea, select { font-family: inherit; }
+@media (max-width: 520px) {
+  main, .main-shell, .entry-page { width: calc(100% - 32px); padding-top: 20px; }
+  .masthead { gap: 12px; }
+  .journal-search-button { padding-inline: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+ *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+}
+
+.masthead__eyebrow { font-size: 22px; font-weight: 600; letter-spacing: normal; color: var(--ink); margin: 0 0 8px; }
+.masthead h1 { font-family: "Source Serif 4", Georgia, serif; font-size: 26px; font-weight: 400; }
+.masthead__note { background: transparent; transform: none; box-shadow: none; padding: 0; font-size: 14px; color: var(--ink-soft); }
+.chip:nth-of-type(n) { background: transparent; transform: none; }
+.post-card:hover { transform: none; box-shadow: none; }
+
+/* Browser QA: visible text-only identity and no nested frame around feed text. */
+.journal-brand-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.journal-brand-header h1 { margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 22px; line-height: 1.4; font-weight: 600; }
+.journal-brand-header a, .journal-brand-header button { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); background: transparent; border: 0; font-size: 15px; text-decoration: none; }
+.post-card .post-media, .post-card:not(.post-card--photo) .post-media-text { border: 0; padding: 0; border-radius: 0; background: transparent; }

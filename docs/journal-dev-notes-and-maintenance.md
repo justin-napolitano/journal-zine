@@ -87,3 +87,7 @@ curl -X POST -H "Cookie: journal_session=1" http://localhost:3000/api/mastodon-s
 ```
 
 Keep iterating on this file whenever you add a new cron job, script, or deployment quirk so the operational context stays centralized.
+
+## 2026-10-22 supported Next prerequisite
+
+Bounded same-major Next16.4.1/React19.2.9 update preserves phaseAauth/invite/session behavior and reactCompiler config. See next-16-stable-prerequisite.md for exact sources, build/auth evidence, remaining baseline transitive advisories and local Turbopack OS restriction. No migration or public account writes.

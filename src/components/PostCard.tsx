@@ -79,7 +79,7 @@ export function PostCard({ post, onTagClick }: Props) {
         {isPhoto && post.image_data ? (
           // PHOTO CARD
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.image_data} alt="" className="post-image" />
+          <img src={post.image_data} alt={post.body.trim() || "Photo shared in this journal entry"} className="post-image" />
         ) : isLink && post.link_url ? (
           // LINK CARD
           <a
