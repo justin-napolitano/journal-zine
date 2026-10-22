@@ -1,0 +1,967 @@
+{
+  "renderedSourceCommit": "f2d1102",
+  "responsive": {
+    "name": "journal",
+    "url": "http://127.0.0.1:4424/",
+    "captures": [
+      {
+        "width": 390,
+        "path": "/Users/justin/repos/brand-review/2026-10-22/implementation-evidence/browser-qa/2026-10-22T19-15-27-994Z/journal-390.png",
+        "dom": {
+          "title": "Studio Journal \u00b7 Justin Napolitano",
+          "viewport": {
+            "width": 390,
+            "height": 900
+          },
+          "documentWidth": 390,
+          "body": {
+            "fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "16px",
+            "fontWeight": "400",
+            "lineHeight": "26.4px",
+            "color": "rgb(37, 37, 31)",
+            "backgroundColor": "rgb(244, 240, 232)"
+          },
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Studio Journal",
+              "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif",
+              "fontSize": "22px",
+              "fontWeight": "600",
+              "lineHeight": "30.8px",
+              "color": "rgb(37, 37, 31)",
+              "backgroundColor": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "overflowCandidates": [],
+          "links": [
+            {
+              "label": "Editor",
+              "href": "/login",
+              "sameOrigin": true,
+              "contact": false,
+              "target": "",
+              "rel": ""
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116068180935363554",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116062548118302975",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116056888828776238",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116051231921275406",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116045574982677947",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116039908385356053",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116034207101987771",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116028545106007032",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116022910639612498",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116017249709906397",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116011581922341421",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116005911561694427",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            }
+          ],
+          "forms": [
+            {
+              "method": "get",
+              "action": "/",
+              "fields": [
+                {
+                  "tag": "INPUT",
+                  "name": "",
+                  "type": "text",
+                  "hasLabel": false,
+                  "required": false
+                },
+                {
+                  "tag": "BUTTON",
+                  "name": "",
+                  "type": "submit",
+                  "hasLabel": false
+                }
+              ]
+            }
+          ],
+          "fontStatus": "loaded"
+        }
+      },
+      {
+        "width": 768,
+        "path": "/Users/justin/repos/brand-review/2026-10-22/implementation-evidence/browser-qa/2026-10-22T19-15-27-994Z/journal-768.png",
+        "dom": {
+          "title": "Studio Journal \u00b7 Justin Napolitano",
+          "viewport": {
+            "width": 768,
+            "height": 900
+          },
+          "documentWidth": 768,
+          "body": {
+            "fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "16px",
+            "fontWeight": "400",
+            "lineHeight": "26.4px",
+            "color": "rgb(37, 37, 31)",
+            "backgroundColor": "rgb(244, 240, 232)"
+          },
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Studio Journal",
+              "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif",
+              "fontSize": "22px",
+              "fontWeight": "600",
+              "lineHeight": "30.8px",
+              "color": "rgb(37, 37, 31)",
+              "backgroundColor": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "overflowCandidates": [],
+          "links": [
+            {
+              "label": "Editor",
+              "href": "/login",
+              "sameOrigin": true,
+              "contact": false,
+              "target": "",
+              "rel": ""
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116068180935363554",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116062548118302975",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116056888828776238",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116051231921275406",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116045574982677947",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116039908385356053",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116034207101987771",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116028545106007032",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116022910639612498",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116017249709906397",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116011581922341421",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116005911561694427",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            }
+          ],
+          "forms": [
+            {
+              "method": "get",
+              "action": "/",
+              "fields": [
+                {
+                  "tag": "INPUT",
+                  "name": "",
+                  "type": "text",
+                  "hasLabel": false,
+                  "required": false
+                },
+                {
+                  "tag": "BUTTON",
+                  "name": "",
+                  "type": "submit",
+                  "hasLabel": false
+                }
+              ]
+            }
+          ],
+          "fontStatus": "loaded"
+        }
+      },
+      {
+        "width": 1440,
+        "path": "/Users/justin/repos/brand-review/2026-10-22/implementation-evidence/browser-qa/2026-10-22T19-15-27-994Z/journal-1440.png",
+        "dom": {
+          "title": "Studio Journal \u00b7 Justin Napolitano",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "documentWidth": 1440,
+          "body": {
+            "fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "16px",
+            "fontWeight": "400",
+            "lineHeight": "26.4px",
+            "color": "rgb(37, 37, 31)",
+            "backgroundColor": "rgb(244, 240, 232)"
+          },
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Studio Journal",
+              "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif",
+              "fontSize": "22px",
+              "fontWeight": "600",
+              "lineHeight": "30.8px",
+              "color": "rgb(37, 37, 31)",
+              "backgroundColor": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "overflowCandidates": [],
+          "links": [
+            {
+              "label": "Editor",
+              "href": "/login",
+              "sameOrigin": true,
+              "contact": false,
+              "target": "",
+              "rel": ""
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116068180935363554",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116062548118302975",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116056888828776238",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116051231921275406",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116045574982677947",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116039908385356053",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116034207101987771",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116028545106007032",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116022910639612498",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116017249709906397",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116011581922341421",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116005911561694427",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            }
+          ],
+          "forms": [
+            {
+              "method": "get",
+              "action": "/",
+              "fields": [
+                {
+                  "tag": "INPUT",
+                  "name": "",
+                  "type": "text",
+                  "hasLabel": false,
+                  "required": false
+                },
+                {
+                  "tag": "BUTTON",
+                  "name": "",
+                  "type": "submit",
+                  "hasLabel": false
+                }
+              ]
+            }
+          ],
+          "fontStatus": "loaded"
+        }
+      },
+      {
+        "width": 320,
+        "path": "/Users/justin/repos/brand-review/2026-10-22/implementation-evidence/browser-qa/2026-10-22T19-15-27-994Z/journal-320.png",
+        "dom": {
+          "title": "Studio Journal \u00b7 Justin Napolitano",
+          "viewport": {
+            "width": 320,
+            "height": 900
+          },
+          "documentWidth": 320,
+          "body": {
+            "fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "16px",
+            "fontWeight": "400",
+            "lineHeight": "26.4px",
+            "color": "rgb(37, 37, 31)",
+            "backgroundColor": "rgb(244, 240, 232)"
+          },
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Studio Journal",
+              "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif",
+              "fontSize": "22px",
+              "fontWeight": "600",
+              "lineHeight": "30.8px",
+              "color": "rgb(37, 37, 31)",
+              "backgroundColor": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "overflowCandidates": [],
+          "links": [
+            {
+              "label": "Editor",
+              "href": "/login",
+              "sameOrigin": true,
+              "contact": false,
+              "target": "",
+              "rel": ""
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116068180935363554",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116062548118302975",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116056888828776238",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116051231921275406",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116045574982677947",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116039908385356053",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116034207101987771",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116028545106007032",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116022910639612498",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116017249709906397",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116011581922341421",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            },
+            {
+              "label": "view on mastodon.social",
+              "href": "https://mastodon.social/@jnapolitano/116005911561694427",
+              "sameOrigin": false,
+              "contact": false,
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            }
+          ],
+          "forms": [
+            {
+              "method": "get",
+              "action": "/",
+              "fields": [
+                {
+                  "tag": "INPUT",
+                  "name": "",
+                  "type": "text",
+                  "hasLabel": false,
+                  "required": false
+                },
+                {
+                  "tag": "BUTTON",
+                  "name": "",
+                  "type": "submit",
+                  "hasLabel": false
+                }
+              ]
+            }
+          ],
+          "fontStatus": "loaded"
+        }
+      }
+    ],
+    "console": [],
+    "pageErrors": [],
+    "routeChecks": [],
+    "visualQa": "pending human comparison",
+    "navigation": {
+      "status": 200,
+      "path": "/"
+    },
+    "syntheticLogin": {
+      "attempted": false
+    },
+    "zoomReflowApproximation": {
+      "label": "1440px display at 200% effective CSS viewport; native zoom still needs review",
+      "dom": {
+        "title": "Studio Journal \u00b7 Justin Napolitano",
+        "viewport": {
+          "width": 720,
+          "height": 450
+        },
+        "documentWidth": 720,
+        "body": {
+          "fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "26.4px",
+          "color": "rgb(37, 37, 31)",
+          "backgroundColor": "rgb(244, 240, 232)"
+        },
+        "headings": [
+          {
+            "tag": "H1",
+            "text": "Studio Journal",
+            "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif",
+            "fontSize": "22px",
+            "fontWeight": "600",
+            "lineHeight": "30.8px",
+            "color": "rgb(37, 37, 31)",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ],
+        "overflowCandidates": [],
+        "links": [
+          {
+            "label": "Editor",
+            "href": "/login",
+            "sameOrigin": true,
+            "contact": false,
+            "target": "",
+            "rel": ""
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116068180935363554",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116062548118302975",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116056888828776238",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116051231921275406",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116045574982677947",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116039908385356053",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116034207101987771",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116028545106007032",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116022910639612498",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116017249709906397",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116011581922341421",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          },
+          {
+            "label": "view on mastodon.social",
+            "href": "https://mastodon.social/@jnapolitano/116005911561694427",
+            "sameOrigin": false,
+            "contact": false,
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          }
+        ],
+        "forms": [
+          {
+            "method": "get",
+            "action": "/",
+            "fields": [
+              {
+                "tag": "INPUT",
+                "name": "",
+                "type": "text",
+                "hasLabel": false,
+                "required": false
+              },
+              {
+                "tag": "BUTTON",
+                "name": "",
+                "type": "submit",
+                "hasLabel": false
+              }
+            ]
+          }
+        ],
+        "fontStatus": "loaded"
+      }
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "label": "Editor",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "INPUT",
+        "label": "Search journal entries",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Search",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "BUTTON",
+        "label": "All entries",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Photos",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Link drops",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Mastodon crossposts",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Studio-only drafts",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "BUTTON",
+        "label": "#listening",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      },
+      {
+        "tag": "BUTTON",
+        "label": "#spotify",
+        "outline": "rgb(83, 101, 122) solid 2px",
+        "boxShadow": "none",
+        "inViewport": true
+      }
+    ],
+    "samePageNavigation": {
+      "checked": false,
+      "reason": "No visible same-page navigation anchor"
+    },
+    "domInspection": "captured, requires review; no automatic visual pass"
+  },
+  "details": {
+    "name": "journal",
+    "searchFields": [
+      {
+        "name": "",
+        "type": "text",
+        "placeholder": "Search\u2026 (try \"tag:journal\" or \"source:mastodon\")",
+        "label": 0,
+        "ariaLabel": "Search journal entries"
+      }
+    ],
+    "fonts": {
+      "inter": true,
+      "serif": false
+    },
+    "nativeKeyboardZoom": {
+      "before": {
+        "width": 1440,
+        "dpr": 1
+      },
+      "after": {
+        "width": 1440,
+        "dpr": 1
+      },
+      "changed": false
+    },
+    "effective200Zoom": {
+      "cssViewport": 720,
+      "deviceScale": 2,
+      "documentWidth": 720
+    }
+  },
+  "interactions": {
+    "name": "journal",
+    "errors": [],
+    "search": {
+      "status": 200,
+      "resultCards": 0
+    },
+    "photoFilter": {
+      "status": 200,
+      "images": 4,
+      "emptyAlts": 0
+    },
+    "pagination": {
+      "initial": 12,
+      "after": 24,
+      "requestSeen": true,
+      "status": 200
+    },
+    "unauthenticatedPost": 401,
+    "login": {
+      "width": 390,
+      "documentWidth": 390,
+      "headings": [],
+      "controls": [
+        {
+          "type": "password",
+          "label": 1,
+          "aria": null
+        }
+      ]
+    },
+    "syntheticLoginStatus": 200,
+    "syntheticLoginComposer": 1
+  }
+}
