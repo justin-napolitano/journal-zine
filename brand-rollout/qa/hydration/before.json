@@ -1,0 +1,85 @@
+{
+  "url": "https://journal.justin-napolitano.com",
+  "contexts": [
+    {
+      "timezoneId": "America/New_York",
+      "locale": "en-US",
+      "labels": [
+        "Feb 14, 2026, 04:04 AM",
+        "Feb 13, 2026, 04:12 AM",
+        "Feb 12, 2026, 04:13 AM",
+        "Feb 11, 2026, 04:14 AM",
+        "Feb 10, 2026, 04:15 AM",
+        "Feb 9, 2026, 04:14 AM",
+        "Feb 8, 2026, 04:04 AM",
+        "Feb 7, 2026, 04:04 AM",
+        "Feb 6, 2026, 04:11 AM",
+        "Feb 5, 2026, 04:12 AM",
+        "Feb 4, 2026, 04:10 AM",
+        "Feb 3, 2026, 04:08 AM"
+      ],
+      "errors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ],
+      "documentWidth": 390
+    },
+    {
+      "timezoneId": "Asia/Tokyo",
+      "locale": "ja-JP",
+      "labels": [
+        "2026年2月14日 18:04",
+        "2026年2月13日 18:12",
+        "2026年2月12日 18:13",
+        "2026年2月11日 18:14",
+        "2026年2月10日 18:15",
+        "2026年2月9日 18:14",
+        "2026年2月8日 18:04",
+        "2026年2月7日 18:04",
+        "2026年2月6日 18:11",
+        "2026年2月5日 18:12",
+        "2026年2月4日 18:10",
+        "2026年2月3日 18:08"
+      ],
+      "errors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ],
+      "documentWidth": 390
+    },
+    {
+      "timezoneId": "Europe/Berlin",
+      "locale": "de-DE",
+      "labels": [
+        "14. Feb. 2026, 10:04",
+        "13. Feb. 2026, 10:12",
+        "12. Feb. 2026, 10:13",
+        "11. Feb. 2026, 10:14",
+        "10. Feb. 2026, 10:15",
+        "9. Feb. 2026, 10:14",
+        "8. Feb. 2026, 10:04",
+        "7. Feb. 2026, 10:04",
+        "6. Feb. 2026, 10:11",
+        "5. Feb. 2026, 10:12",
+        "4. Feb. 2026, 10:10",
+        "3. Feb. 2026, 10:08"
+      ],
+      "errors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ],
+      "documentWidth": 390
+    }
+  ],
+  "serverLabels": [
+    "Feb 14, 2026, 09:04 AM",
+    "Feb 13, 2026, 09:12 AM",
+    "Feb 12, 2026, 09:13 AM",
+    "Feb 11, 2026, 09:14 AM",
+    "Feb 10, 2026, 09:15 AM",
+    "Feb 9, 2026, 09:14 AM",
+    "Feb 8, 2026, 09:04 AM",
+    "Feb 7, 2026, 09:04 AM",
+    "Feb 6, 2026, 09:11 AM",
+    "Feb 5, 2026, 09:12 AM",
+    "Feb 4, 2026, 09:10 AM",
+    "Feb 3, 2026, 09:08 AM"
+  ]
+}
