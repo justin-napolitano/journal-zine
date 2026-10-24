@@ -77,3 +77,34 @@ input, button, textarea, select { font-family: inherit; }
 .journal-brand-header h1 { margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 22px; line-height: 1.4; font-weight: 600; }
 .journal-brand-header a, .journal-brand-header button { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); background: transparent; border: 0; font-size: 15px; text-decoration: none; }
 .post-card .post-media, .post-card:not(.post-card--photo) .post-media-text { border: 0; padding: 0; border-radius: 0; background: transparent; }
+
+/* Shared approved palette: midpoint-red text accents, green native scroll canvas. */
+@media screen {
+  :root, :root[data-theme], :root[data-brand-theme] {
+    --brand-accent: #d01527;
+    --brand-text-accent: var(--brand-accent);
+    --brand-highlight: #fff0f2;
+    --brand-canvas: #356349;
+    --brand-page: #f4f0e8;
+    --accent: var(--brand-accent);
+    --accent-hover: var(--brand-accent);
+    --accent-strong: var(--brand-accent);
+    --accent-soft: var(--brand-highlight);
+    --accent-2: var(--brand-accent);
+    --accent-3: var(--brand-accent);
+    --text-link: var(--brand-text-accent);
+  }
+  html, body { background: var(--brand-canvas) !important; overscroll-behavior: auto; }
+  .brand-site-surface { width:100%; min-height:100svh; background:var(--brand-page); display:flow-root; }
+  ::selection { background:var(--brand-highlight); color:var(--brand-accent); }
+  mark { background:var(--brand-highlight); color:var(--brand-accent); }
+  a:where(:not(.button):not(.button-link):not(.cta):not(.button-primary):not(.button-secondary):not([class*="bg-"])):hover,
+  nav a:hover, nav a[aria-current="page"] { color:var(--brand-text-accent); text-decoration-color:var(--brand-accent); }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
+    outline:2px solid var(--brand-accent); outline-offset:4px;
+  }
+  .button-primary:hover, .cta.primary:hover, .button-link:not(.secondary):hover {
+    background:var(--brand-accent); border-color:var(--brand-accent); color:var(--brand-page);
+  }
+  .filter-pill-active { color:var(--brand-accent); background:var(--brand-highlight); border-color:var(--brand-accent); }
+}
