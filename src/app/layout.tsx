@@ -17,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <div className="brand-site-surface">
         {children}
+              </div>
       </body>
     </html>
   );
